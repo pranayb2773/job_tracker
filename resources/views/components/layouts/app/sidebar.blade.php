@@ -47,7 +47,7 @@
                     <flux:navlist.item
                         icon="document-text"
                         :href="route('documents.list')"
-                        :current="request()->routeIs('documents.list')"
+                        :current="request()->routeIs(['documents.list', 'documents.analyze'])"
                         wire:navigate
                     >
                         {{ __('Documents') }}

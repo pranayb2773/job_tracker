@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vendor/bin/pint:*)",
+      "Bash(php artisan make:livewire:*)",
+      "Bash(composer show)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

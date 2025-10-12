@@ -21,6 +21,8 @@ final class Document extends Model
         'file_mime_type',
         'file_size',
         'file_hash',
+        'analysis',
+        'analyzed_at',
     ];
 
     public function user(): BelongsTo
@@ -57,6 +59,8 @@ final class Document extends Model
         return [
             'type' => DocumentType::class,
             'file_size' => 'integer',
+            'analysis' => 'array',
+            'analyzed_at' => 'datetime',
         ];
     }
 }
