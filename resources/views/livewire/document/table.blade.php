@@ -47,22 +47,33 @@
                 <flux:table.row :key="$document->id">
                     <flux:table.cell class="!pl-4 size-2">
                         <flux:checkbox
-                            wire:model="selectedUserIds"
+                            wire:model="selectedDocumentIds"
                             value="{{ $document->id }}"
                         ></flux:checkbox>
                     </flux:table.cell>
 
                     <flux:table.cell class="min-w-6 w-1/4">
-                        <div class="flex items-center gap-2">
+                        <a
+                            href="{{ route('documents.analyze', $document) }}"
+                            wire:navigate
+                            class="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        >
                             <flux:icon
                                 name="{{ $document->type->getIcon() }}"
+                                color="{{ $document->type->getColor() }}"
                             ></flux:icon>
                             <span>{{ $document->title }}</span>
-                        </div>
+                        </a>
                     </flux:table.cell>
 
                     <flux:table.cell class="min-w-6 w-1/4">
-                        {{ $user->type }}
+                        <flux:badge
+                            size="sm"
+                            :color="$document->type->getColor()"
+                            variant="pill"
+                        >
+                            {{ $document->type->getLabel() }}
+                        </flux:badge>
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -70,7 +81,7 @@
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        {{ $document->file_size }}
+                        {{ $document->file_size_formatted }}
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -91,7 +102,10 @@
                                 inset="top bottom"
                             ></flux:button>
                             <flux:menu>
-                                <flux:menu.item icon="cloud-arrow-down">
+                                <flux:menu.item
+                                    icon="cloud-arrow-down"
+                                    wire:click="downloadDocument({{ $document->id }})"
+                                >
                                     Download
                                 </flux:menu.item>
                                 <flux:modal.trigger
@@ -115,7 +129,7 @@
                                 <p>
                                     You're about to delete
                                     <b><i>{{ $document->title }}</i></b>
-                                    user.
+                                    document.
                                 </p>
                                 <p>This action cannot be reversed.</p>
                             </x-slot>

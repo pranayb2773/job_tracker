@@ -98,8 +98,8 @@
     </div>
     <div
         class="flex flex-col justify-between gap-y-1 bg-zinc-50 dark:bg-zinc-600/40 px-3 py-2 sm:flex-row sm:items-center sm:px-6 sm:py-1.5"
-        x-bind:hidden="!$wire.selectedUserIds.length"
-        x-show="$wire.selectedUserIds.length"
+        x-bind:hidden="!$wire.selectedDocumentIds.length"
+        x-show="$wire.selectedDocumentIds.length"
     >
         <div class="flex gap-x-3">
             <span
@@ -107,8 +107,8 @@
                 x-text="
                     window.pluralize(
                         '1 record selected|:count records selected',
-                        $wire.selectedUserIds.length,
-                        { count: $wire.selectedUserIds.length },
+                        $wire.selectedDocumentIds.length,
+                        { count: $wire.selectedDocumentIds.length },
                     )
                 "
             ></span>
@@ -119,9 +119,11 @@
                 color="amber"
                 size="sm"
                 class="cursor-pointer underline hover:text-amber-500/90"
-                x-text="`Select All ${$wire.userIds.length}`"
-                x-bind:hidden="$wire.selectedUserIds.length === $wire.userIds.length"
-            ></flux:text>
+                x-text="`Select All ${$wire.documentIds.length}`"
+                x-bind:hidden="$wire.selectedDocumentIds.length === $wire.documentIds.length"
+            >
+                Select All
+            </flux:text>
             <flux:text
                 @click="deselectAll"
                 color="red"

@@ -8,15 +8,91 @@
 
     <div class="flex items-center justify-between">
         <flux:heading size="xl">{{ __('Documents') }}</flux:heading>
-        <flux:button icon:trailing="document-plus" size="sm" variant="primary">
-            Create Document
-        </flux:button>
+        <flux:modal.trigger name="upload-document">
+            <flux:button
+                icon:trailing="cloud-arrow-up"
+                size="sm"
+                variant="primary"
+            >
+                Upload Document
+            </flux:button>
+        </flux:modal.trigger>
     </div>
 
     <div x-data="checkAll">
         @include('livewire.document.filters')
         @include('livewire.document.table')
     </div>
+
+    {{-- Upload Document Modal --}}
+    <flux:modal name="upload-document" class="md:w-[32rem]">
+        <form wire:submit="uploadDocument">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Upload Document</flux:heading>
+                    <flux:subheading>
+                        Upload a new document to your library
+                    </flux:subheading>
+                </div>
+
+                <flux:field>
+                    <flux:label>File</flux:label>
+                    <flux:file-upload wire:model="file" accept=".pdf">
+                        <flux:file-upload.dropzone
+                            heading="Drop files here or click to browse"
+                            text="PDF up to 1MB"
+                        />
+                    </flux:file-upload>
+                    <flux:description>
+                        Accepted format: PDF only (Max: 1MB)
+                    </flux:description>
+                    <flux:error name="file" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Title</flux:label>
+                    <flux:input
+                        wire:model="title"
+                        placeholder="Auto-filled from filename"
+                    />
+                    <flux:description>
+                        Title is automatically populated from the PDF filename
+                    </flux:description>
+                    <flux:error name="title" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Document Type</flux:label>
+                    <flux:select
+                        wire:model="type"
+                        variant="listbox"
+                        placeholder="Choose document type..."
+                    >
+                        @foreach (\App\Enums\DocumentType::cases() as $documentType)
+                            <flux:select.option
+                                value="{{ $documentType->value }}"
+                            >
+                                {{ $documentType->getLabel() }}
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="type" />
+                </flux:field>
+
+                <div class="flex gap-2">
+                    <flux:spacer />
+
+                    <flux:modal.close>
+                        <flux:button variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+
+                    <flux:button type="submit" variant="primary">
+                        Upload Document
+                    </flux:button>
+                </div>
+            </div>
+        </form>
+    </flux:modal>
 </div>
 
 @script
@@ -32,8 +108,8 @@
                         this.updateCheckAllState();
                     });
 
-                    this.$wire.$watch('documentIds', (newUsers) => {
-                        if (!newUsers.length) {
+                    this.$wire.$watch('documentIds', (newDocuments) => {
+                        if (!newDocuments.length) {
                             this.$refs.checkbox.checked = false; // Remove checked
                             this.$refs.checkbox.indeterminate = false;
                         }
@@ -78,6 +154,12 @@
 
                         this.$wire.selectedDocumentIds.push(id);
                     });
+
+                    console.log('documentIds', this.$wire.documentIds);
+                    console.log(
+                        'selectedDocumentIds',
+                        this.$wire.selectedDocumentIds,
+                    );
                 },
 
                 selectAll() {

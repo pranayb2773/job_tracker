@@ -9,16 +9,21 @@ use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @property LengthAwarePaginator|Document[] $documents
  */
 final class ListDocuments extends Component
 {
+    use WithFileUploads;
     use WithPagination;
 
     public array $selectedDocumentIds = [];
@@ -28,6 +33,7 @@ final class ListDocuments extends Component
     public array $documentIds = [];
 
     public array $filters = [];
+
     public int $activeFilterCount = 0;
 
     public string $search = '';
@@ -36,13 +42,21 @@ final class ListDocuments extends Component
 
     public string $sortDirection = 'asc';
 
+    public string $title = '';
+
+    #[Validate('required|string')]
+    public string $type = '';
+
+    #[Validate('required|file|max:10240|mimes:pdf')]
+    public $file = null;
+
     public function render(): View
     {
         $this->documentIds = $this->allDocumentIds();
-        $this->documentIdsOnPage = $this->documents->map(fn(Document $document) => (string) $document->id)->toArray();
+        $this->documentIdsOnPage = $this->documents->map(fn (Document $document) => (string) $document->id)->toArray();
 
         return view('livewire.document.list-documents')
-            ->title(config('app.name') . ' | List Documents');
+            ->title(config('app.name').' | List Documents');
     }
 
     #[Computed]
@@ -90,12 +104,40 @@ final class ListDocuments extends Component
         };
     }
 
+    public function downloadDocument(int $documentId): ?StreamedResponse
+    {
+        $document = Document::query()
+            ->where('id', $documentId)
+            ->whereBelongsTo(Auth::user())
+            ->firstOrFail();
+
+        if (! Storage::disk('local')->exists($document->file_path)) {
+            Flux::toast(
+                text: 'File not found.',
+                heading: 'Download Failed',
+                variant: 'danger',
+            );
+
+            return null;
+        }
+
+        return Storage::disk('local')->download(
+            $document->file_path,
+            $document->file_name
+        );
+    }
+
     public function deleteDocument(int $documentId): void
     {
         $document = Document::query()
             ->where('id', $documentId)
             ->whereBelongsTo(Auth::user())
             ->firstOrFail();
+
+        // Delete the physical file
+        if (Storage::disk('local')->exists($document->file_path)) {
+            Storage::disk('local')->delete($document->file_path);
+        }
 
         $document->delete();
 
@@ -110,10 +152,20 @@ final class ListDocuments extends Component
 
     public function deleteSelectedDocuments(): void
     {
-        Document::query()
+        $documents = Document::query()
             ->whereIn('id', $this->selectedDocumentIds)
             ->whereBelongsTo(Auth::user())
-            ->delete();
+            ->get();
+
+        // Delete the physical files
+        foreach ($documents as $document) {
+            if (Storage::disk('local')->exists($document->file_path)) {
+                Storage::disk('local')->delete($document->file_path);
+            }
+        }
+
+        // Delete the database records
+        $documents->each->delete();
 
         $this->reset('selectedDocumentIds');
         Flux::modal('delete-documents-bulk')->close();
@@ -125,14 +177,58 @@ final class ListDocuments extends Component
         );
     }
 
+    public function updatedFile(): void
+    {
+        if ($this->file) {
+            $originalName = $this->file->getClientOriginalName();
+            $this->title = pathinfo($originalName, PATHINFO_FILENAME);
+        }
+    }
+
+    public function uploadDocument(): void
+    {
+        $this->validate([
+            'type' => 'required|string',
+            'file' => 'required|file|max:10240|mimes:pdf',
+        ]);
+
+        if (empty($this->title)) {
+            $this->title = pathinfo($this->file->getClientOriginalName(), PATHINFO_FILENAME);
+        }
+
+        $userId = Auth::id();
+        $filePath = $this->file->store("documents/user-{$userId}", 'local');
+        $fileHash = hash_file('sha256', $this->file->getRealPath());
+
+        Document::query()->create([
+            'user_id' => $userId,
+            'title' => $this->title,
+            'type' => $this->type,
+            'file_name' => $this->file->getClientOriginalName(),
+            'file_path' => $filePath,
+            'file_mime_type' => $this->file->getMimeType(),
+            'file_size' => $this->file->getSize(),
+            'file_hash' => $fileHash,
+        ]);
+
+        $this->reset(['title', 'type', 'file']);
+        Flux::modal('upload-document')->close();
+
+        Flux::toast(
+            text: 'Document uploaded successfully.',
+            heading: 'Document Uploaded',
+            variant: 'success',
+        );
+    }
+
     protected function allDocumentIds(): array
     {
         return Document::query()
             ->whereBelongsTo(Auth::user())
-            ->when($this->search, fn(Builder $q) => $this->applySearch($q))
-            ->when($this->filters, fn(Builder $q) => $this->applyFilters($q))
+            ->when($this->search, fn (Builder $q) => $this->applySearch($q))
+            ->when($this->filters, fn (Builder $q) => $this->applyFilters($q))
             ->pluck('id')
-            ->map(fn(int $id) => (string) $id)
+            ->map(fn (int $id) => (string) $id)
             ->toArray();
     }
 }

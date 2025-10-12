@@ -30,13 +30,26 @@ enum DocumentType: string
     public function getIcon(): string
     {
         return match ($this) {
-            self::CurriculumVitae => 'heroicon-o-document-text',
-            self::CoverLetter => 'heroicon-o-envelope',
-            self::LetterOfInterest => 'heroicon-o-heart',
-            self::FollowUpLetter => 'heroicon-o-arrow-path',
-            self::AcceptanceLetter => 'heroicon-o-check-circle',
-            self::DeclineLetter => 'heroicon-o-x-circle',
-            self::Other => 'heroicon-o-document',
+            self::CurriculumVitae => 'document-text',
+            self::CoverLetter => 'envelope',
+            self::LetterOfInterest => 'heart',
+            self::FollowUpLetter => 'arrow-path',
+            self::AcceptanceLetter => 'check-circle',
+            self::DeclineLetter => 'x-circle',
+            self::Other => 'document',
+        };
+    }
+
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::CurriculumVitae => 'blue',
+            self::CoverLetter => 'green',
+            self::LetterOfInterest => 'pink',
+            self::FollowUpLetter => 'purple',
+            self::AcceptanceLetter => 'lime',
+            self::DeclineLetter => 'red',
+            self::Other => 'zinc',
         };
     }
 }

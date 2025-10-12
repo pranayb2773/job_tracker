@@ -5,47 +5,44 @@
     'clickEvent' => null,
 ])
 
-<flux:modal :name="$name" class="md:w-96">
-    <div class="space-y-6">
-        <div class="sm:flex sm:items-start">
+<flux:modal :name="$name" class="md:w-[32rem]">
+    <div class="space-y-6 text-center">
+        <div class="flex flex-col items-center space-y-4">
             <div
-                class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:size-10"
+                class="flex size-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20"
             >
-                <svg
-                    class="size-6 text-red-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                    data-slot="icon"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-                    />
-                </svg>
+                <flux:icon.trash
+                    variant="solid"
+                    class="size-8 text-red-600 dark:text-red-500"
+                />
             </div>
 
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <flux:heading size="lg">{{ $heading }}</flux:heading>
-                <flux:text class="mt-2 space-y-2">
+            <div class="space-y-2">
+                <flux:heading
+                    size="xl"
+                    class="text-zinc-900 dark:text-white font-semibold"
+                >
+                    {{ $heading }}
+                </flux:heading>
+                <div
+                    class="text-base text-zinc-600 dark:text-zinc-400 space-y-2"
+                >
                     {{ $subHeading }}
-                </flux:text>
+                </div>
             </div>
         </div>
 
-        <div class="flex gap-2">
-            <flux:spacer />
-
-            <flux:modal.close>
-                <flux:button>Cancel</flux:button>
-            </flux:modal.close>
+        <div class="flex gap-3">
+            <div class="flex-1">
+                <flux:modal.close>
+                    <flux:button class="w-full">Cancel</flux:button>
+                </flux:modal.close>
+            </div>
 
             <flux:button
                 type="button"
                 variant="danger"
+                class="flex-1"
                 wire:click="{{ $clickEvent }}"
             >
                 Delete
