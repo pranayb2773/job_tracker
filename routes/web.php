@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Application\ListJobApplications;
+use App\Livewire\Document\ListDocuments;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
@@ -25,12 +27,15 @@ Route::middleware(['auth'])->group(function () {
         ->middleware(
             when(
                 Features::canManageTwoFactorAuthentication()
-                    && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
+                && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
                 ['password.confirm'],
                 [],
             ),
         )
         ->name('two-factor.show');
+
+    Route::get('applications', ListJobApplications::class)->name('applications.list');
+    Route::get('documents', ListDocuments::class)->name('documents.list');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
