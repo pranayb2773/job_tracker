@@ -76,7 +76,7 @@ final class ListDocuments extends Component
     #[Computed]
     public function documents(): LengthAwarePaginator
     {
-        $query = Document::query();
+        $query = Document::query()->whereBelongsTo(Auth::user());
         $this->applySearch($query);
         $this->applyFilters($query);
         $this->applySorting($query);

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(vendor/bin/pint:*)",
       "Bash(php artisan make:livewire:*)",
-      "Bash(composer show)"
+      "Bash(composer show)",
+      "Bash(php artisan make:test:*)",
+      "Bash(php artisan test:*)"
     ],
     "deny": [],
     "ask": []
