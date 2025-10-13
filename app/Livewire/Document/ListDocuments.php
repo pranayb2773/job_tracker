@@ -47,7 +47,7 @@ final class ListDocuments extends Component
     #[Validate('required|string')]
     public string $type = '';
 
-    #[Validate('required|file|max:10240|mimes:pdf')]
+    #[Validate('required|file|max:1024|mimes:pdf')]
     public $file = null;
 
     public function render(): View
@@ -57,6 +57,20 @@ final class ListDocuments extends Component
 
         return view('livewire.document.list-documents')
             ->title(config('app.name').' | List Documents');
+    }
+
+    public function updated($property): void
+    {
+        if (str($property)->contains('filters')) {
+            $this->activeFilterCount = count(array_filter($this->filters));
+            $this->reset(['selectedDocumentIds', 'documentIdsOnPage']);
+            $this->resetPage();
+        }
+
+        if ($property === 'search') {
+            $this->reset(['selectedDocumentIds', 'documentIdsOnPage']);
+            $this->resetPage();
+        }
     }
 
     #[Computed]

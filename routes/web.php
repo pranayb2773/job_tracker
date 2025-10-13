@@ -37,7 +37,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('applications', ListJobApplications::class)->name('applications.list');
     Route::get('documents', ListDocuments::class)->name('documents.list');
-    Route::get('documents/{document}/analyze', AnalyzeDocument::class)->name('documents.analyze');
+    Route::get('documents/{document:file_hash}/analyze', AnalyzeDocument::class)->name('documents.analyze');
 });
 
 require __DIR__.'/auth.php';

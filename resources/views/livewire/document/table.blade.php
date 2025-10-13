@@ -53,17 +53,27 @@
                     </flux:table.cell>
 
                     <flux:table.cell class="min-w-6 w-1/4">
-                        <a
-                            href="{{ route('documents.analyze', $document) }}"
-                            wire:navigate
-                            class="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        >
-                            <flux:icon
-                                name="{{ $document->type->getIcon() }}"
-                                color="{{ $document->type->getColor() }}"
-                            ></flux:icon>
-                            <span>{{ $document->title }}</span>
-                        </a>
+                        @if ($document->type === \App\Enums\DocumentType::CurriculumVitae)
+                            <a
+                                href="{{ route('documents.analyze', $document->file_hash) }}"
+                                wire:navigate
+                                class="flex items-center gap-4 hover:underline"
+                            >
+                                <flux:icon
+                                    name="{{ $document->type->getIcon() }}"
+                                    color="{{ $document->type->getColor() }}"
+                                ></flux:icon>
+                                <span>{{ $document->title }}</span>
+                            </a>
+                        @else
+                            <div class="flex items-center gap-4">
+                                <flux:icon
+                                    name="{{ $document->type->getIcon() }}"
+                                    color="{{ $document->type->getColor() }}"
+                                ></flux:icon>
+                                <span>{{ $document->title }}</span>
+                            </div>
+                        @endif
                     </flux:table.cell>
 
                     <flux:table.cell class="min-w-6 w-1/4">

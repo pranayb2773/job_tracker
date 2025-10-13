@@ -43,7 +43,7 @@ enum DocumentType: string
     public function getColor(): string
     {
         return match ($this) {
-            self::CurriculumVitae => 'blue',
+            self::CurriculumVitae => 'orange',
             self::CoverLetter => 'green',
             self::LetterOfInterest => 'pink',
             self::FollowUpLetter => 'purple',
