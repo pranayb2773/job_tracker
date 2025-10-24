@@ -10,7 +10,7 @@
                     <flux:checkbox
                         x-ref="checkbox"
                         @change="handleCheck"
-                        :disabled="$this->documents->isEmpty()"
+                        :disabled="$this->applications->isEmpty()"
                     ></flux:checkbox>
                 </div>
             </flux:table.column>
@@ -20,83 +20,84 @@
                 :direction="$sortDirection"
                 wire:click="sortBy('title')"
             >
-                Name
+                Job Title
             </flux:table.column>
             <flux:table.column
                 sortable
-                :sorted="$sortCol === 'type'"
+                :sorted="$sortCol === 'organisation'"
                 :direction="$sortDirection"
-                wire:click="sortBy('type')"
+                wire:click="sortBy('organisation')"
             >
-                Type
+                Organisation
             </flux:table.column>
-            <flux:table.column>Mime Type</flux:table.column>
-            <flux:table.column>File Size</flux:table.column>
             <flux:table.column
                 sortable
-                :sorted="$sortCol === 'date'"
+                :sorted="$sortCol === 'status'"
                 :direction="$sortDirection"
-                wire:click="sortBy('date')"
+                wire:click="sortBy('status')"
             >
-                Modified At
+                Status
+            </flux:table.column>
+            <flux:table.column
+                sortable
+                :sorted="$sortCol === 'application_date'"
+                :direction="$sortDirection"
+                wire:click="sortBy('application_date')"
+            >
+                Date Applied
+            </flux:table.column>
+            <flux:table.column>Tags</flux:table.column>
+            <flux:table.column
+                sortable
+                :sorted="$sortCol === 'priority'"
+                :direction="$sortDirection"
+                wire:click="sortBy('priority')"
+            >
+                Priority
             </flux:table.column>
             <flux:table.column></flux:table.column>
         </flux:table.columns>
 
         <flux:table.rows>
-            @forelse ($this->documents as $document)
-                <flux:table.row :key="$document->id">
+            @forelse ($this->applications as $application)
+                <flux:table.row :key="$application->id">
                     <flux:table.cell class="!pl-4 size-2">
                         <flux:checkbox
-                            wire:model="selectedDocumentIds"
-                            value="{{ $document->id }}"
+                            wire:model="selectedApplicationIds"
+                            value="{{ $application->id }}"
                         ></flux:checkbox>
                     </flux:table.cell>
 
                     <flux:table.cell class="min-w-6 w-1/4">
-                        @if ($document->type === \App\Enums\DocumentType::CurriculumVitae)
-                            <a
-                                href="{{ route('documents.analyze', $document->file_hash) }}"
-                                wire:navigate
-                                class="flex items-center gap-4 hover:underline"
-                            >
-                                <flux:icon
-                                    name="{{ $document->type->getIcon() }}"
-                                    color="{{ $document->type->getColor() }}"
-                                ></flux:icon>
-                                <span>{{ $document->title }}</span>
-                            </a>
-                        @else
-                            <div class="flex items-center gap-4">
-                                <flux:icon
-                                    name="{{ $document->type->getIcon() }}"
-                                    color="{{ $document->type->getColor() }}"
-                                ></flux:icon>
-                                <span>{{ $document->title }}</span>
-                            </div>
-                        @endif
+                        <a wire:navigate>
+                            {{ $application->job_title }}
+                        </a>
                     </flux:table.cell>
 
                     <flux:table.cell class="min-w-6 w-1/4">
+                        {{ $application->organisation }}
+                    </flux:table.cell>
+
+                    <flux:table.cell>
                         <flux:badge
                             size="sm"
-                            :color="$document->type->getColor()"
+                            :color="$application->status->getColor()"
                             variant="pill"
                         >
-                            {{ $document->type->getLabel() }}
+                            {{ $application->status->getLabel() }}
                         </flux:badge>
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        {{ $document->file_mime_type }}
+                        @foreach ($application->tags as $tag)
+                            <flux:badge size="sm" color="zinc" variant="pill">
+                                {{ $tag }}
+                            </flux:badge>
+                        @endforeach
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        {{ $document->file_size_formatted }}
-                    </flux:table.cell>
-
-                    <flux:table.cell>
-                        {{ $document->updated_at->format('F j, Y g:i A') }}
+                        {{ $application->application_date->diffForHumans() }}
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -115,12 +116,12 @@
                             <flux:menu>
                                 <flux:menu.item
                                     icon="cloud-arrow-down"
-                                    wire:click="downloadDocument({{ $document->id }})"
+                                    wire:click="downloadDocument({{ $application->id }})"
                                 >
                                     Download
                                 </flux:menu.item>
                                 <flux:modal.trigger
-                                    name="{{ 'delete-document-' . $document->id }}"
+                                    name="{{ 'delete-document-' . $application->id }}"
                                 >
                                     <flux:menu.item
                                         icon="trash"
@@ -132,14 +133,14 @@
                             </flux:menu>
                         </flux:dropdown>
                         <x-confirmation-modal
-                            name="delete-document-{{ $document->id }}"
+                            name="delete-document-{{ $application->id }}"
                             heading="Delete Document?"
-                            click-event="deleteDocument({{ $document->id }})"
+                            click-event="deleteDocument({{ $application->id }})"
                         >
                             <x-slot:subHeading>
                                 <p>
                                     You're about to delete
-                                    <b><i>{{ $document->title }}</i></b>
+                                    <b><i>{{ $application->title }}</i></b>
                                     document.
                                 </p>
                                 <p>This action cannot be reversed.</p>
@@ -158,7 +159,7 @@
                                 class="size-8"
                             ></flux:icon.x-circle>
                             <flux:text class="flex align-middle">
-                                No documents found
+                                No applications found
                             </flux:text>
                         </div>
                     </flux:table.cell>
@@ -168,6 +169,6 @@
     </table>
 </div>
 
-@if ($this->documents)
-    <flux:pagination :paginator="$this->documents" />
+@if ($this->applications)
+    <flux:pagination :paginator="$this->applications" />
 @endif

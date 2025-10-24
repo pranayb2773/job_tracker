@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Component;
+use Prism\Prism\Enums\Provider;
 use Prism\Prism\Prism;
 use Smalot\PdfParser\Parser;
 
@@ -24,7 +25,7 @@ final class AnalyzeDocument extends Component
 
     public function mount(Document $document): void
     {
-        // Ensure user owns the document
+        // Ensure the user owns the document
         if ($document->user_id !== Auth::id()) {
             abort(403);
         }
@@ -51,6 +52,7 @@ final class AnalyzeDocument extends Component
                     heading: 'Analysis Failed',
                     variant: 'danger',
                 );
+
                 $this->isAnalyzing = false;
 
                 return;
@@ -73,7 +75,7 @@ final class AnalyzeDocument extends Component
         } catch (Exception $e) {
             logger($e->getMessage());
             Flux::toast(
-                text: 'An error occurred during analysis: '.$e->getMessage(),
+                text: 'An error occurred during analysis: ' . $e->getMessage(),
                 heading: 'Analysis Failed',
                 variant: 'danger',
             );
@@ -85,9 +87,12 @@ final class AnalyzeDocument extends Component
     public function render(): View
     {
         return view('livewire.document.analyze-document')
-            ->title(config('app.name').' | Analyze '.$this->document->title);
+            ->title(config('app.name') . ' | Analyze ' . $this->document->title);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function extractPdfText(): string
     {
         $filePath = Storage::disk('local')->path($this->document->file_path);
@@ -98,17 +103,20 @@ final class AnalyzeDocument extends Component
         return $pdf->getText();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function analyzeWithAI(string $cvText): array
     {
         $prompt = $this->buildAnalysisPrompt($cvText);
 
         $response = Prism::text()
-            ->using('anthropic', 'claude-sonnet-4-20250514')
+            ->using(Provider::Groq, 'moonshotai/kimi-k2-instruct-0905')
             ->withPrompt($prompt)
             ->withMaxTokens(4000)
             ->asText();
 
-        // Clean the response - remove markdown code fences if present
+        // Clean the response - remove Markdown code fences if present
         $responseText = $response->text;
         $responseText = preg_replace('/^```json\s*/m', '', $responseText);
         $responseText = preg_replace('/\s*```$/m', '', $responseText);
@@ -118,9 +126,9 @@ final class AnalyzeDocument extends Component
         $analysisData = json_decode($responseText, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            logger('JSON decode error: '.json_last_error_msg());
-            logger('Response text: '.$responseText);
-            throw new Exception('Failed to parse AI response: '.json_last_error_msg());
+            logger('JSON decode error: ' . json_last_error_msg());
+            logger('Response text: ' . $responseText);
+            throw new Exception('Failed to parse AI response: ' . json_last_error_msg());
         }
 
         return $analysisData;

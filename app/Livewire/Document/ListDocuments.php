@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -38,8 +39,10 @@ final class ListDocuments extends Component
 
     public string $search = '';
 
+    #[Url(as: 'sort')]
     public string $sortCol = '';
 
+    #[Url(as: 'direction')]
     public string $sortDirection = 'asc';
 
     public string $title = '';
@@ -53,10 +56,10 @@ final class ListDocuments extends Component
     public function render(): View
     {
         $this->documentIds = $this->allDocumentIds();
-        $this->documentIdsOnPage = $this->documents->map(fn (Document $document) => (string) $document->id)->toArray();
+        $this->documentIdsOnPage = $this->documents->map(fn(Document $document) => (string)$document->id)->toArray();
 
         return view('livewire.document.list-documents')
-            ->title(config('app.name').' | List Documents');
+            ->title(config('app.name') . ' | List Documents');
     }
 
     public function updated($property): void
@@ -114,7 +117,8 @@ final class ListDocuments extends Component
     {
         match ($this->sortCol) {
             'title', 'type' => $query->orderBy($this->sortCol, $this->sortDirection),
-            default => $query->orderBy('updated_at', $this->sortDirection),
+            'date' => $query->orderBy('updated_at', $this->sortDirection),
+            default => $query->orderBy('updated_at', 'desc'),
         };
     }
 
@@ -125,7 +129,7 @@ final class ListDocuments extends Component
             ->whereBelongsTo(Auth::user())
             ->firstOrFail();
 
-        if (! Storage::disk('local')->exists($document->file_path)) {
+        if (!Storage::disk('local')->exists($document->file_path)) {
             Flux::toast(
                 text: 'File not found.',
                 heading: 'Download Failed',
@@ -239,10 +243,10 @@ final class ListDocuments extends Component
     {
         return Document::query()
             ->whereBelongsTo(Auth::user())
-            ->when($this->search, fn (Builder $q) => $this->applySearch($q))
-            ->when($this->filters, fn (Builder $q) => $this->applyFilters($q))
+            ->when($this->search, fn(Builder $q) => $this->applySearch($q))
+            ->when($this->filters, fn(Builder $q) => $this->applyFilters($q))
             ->pluck('id')
-            ->map(fn (int $id) => (string) $id)
+            ->map(fn(int $id) => (string)$id)
             ->toArray();
     }
 }
