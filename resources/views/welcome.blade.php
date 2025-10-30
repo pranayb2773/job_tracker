@@ -53,108 +53,119 @@
         </div>
 
         <!-- Hero Section -->
-        <div class="relative overflow-hidden bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-950 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+        <div class="relative overflow-hidden bg-gradient-to-b from-white via-zinc-50/50 to-white dark:from-zinc-950 dark:via-zinc-900/50 dark:to-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
             <!-- Background decoration -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
-                <div class="absolute -top-40 -right-40 w-80 h-80 bg-zinc-100 dark:bg-zinc-900 rounded-full blur-3xl opacity-50"></div>
-                <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-zinc-100 dark:bg-zinc-900 rounded-full blur-3xl opacity-50"></div>
+                <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-950 dark:to-purple-950 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-950 dark:to-pink-950 rounded-full blur-3xl opacity-30 animate-pulse" style="animation-delay: 1s;"></div>
+
+                <!-- Grid pattern -->
+                <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]"></div>
             </div>
 
             <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <!-- Left Column: Content -->
-                    <div class="space-y-8">
-                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm">
-                            <flux:icon.sparkles variant="solid" class="size-4 text-zinc-600 dark:text-zinc-400" />
-                            <span class="text-zinc-700 dark:text-zinc-300">AI-Powered Job Search Assistant</span>
+                    <div class="space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-zinc-100 to-zinc-50 dark:from-zinc-800 dark:to-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-sm">
+                            <flux:icon.sparkles variant="solid" class="size-4 text-amber-500 dark:text-amber-400 animate-pulse" />
+                            <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">AI-Powered Job Search Assistant</span>
                         </div>
 
-                        <div class="space-y-4">
-                            <flux:heading size="xl" class="!text-5xl sm:!text-6xl !leading-tight">
-                                Track Every <span class="text-transparent bg-clip-text bg-gradient-to-r from-zinc-900 to-zinc-600 dark:from-zinc-100 dark:to-zinc-400">Job Application</span> in One Place
+                        <div class="space-y-6">
+                            <flux:heading size="xl" class="!text-5xl sm:!text-6xl !leading-[1.1] tracking-tight">
+                                Track Every <span class="relative inline-block">
+                                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 animate-gradient">Job Application</span>
+                                    <svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 10C50 2 100 2 150 8C200 14 250 4 298 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="text-blue-600 dark:text-blue-400 opacity-30"/>
+                                    </svg>
+                                </span> in One Place
                             </flux:heading>
-                            <flux:subheading class="text-lg text-zinc-600 dark:text-zinc-400">
+                            <flux:subheading class="text-xl text-zinc-600 dark:text-zinc-400 max-w-xl leading-relaxed">
                                 From application to offer — stay organized, get AI-powered CV insights, and land your dream job faster with our intelligent tracking system.
                             </flux:subheading>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex flex-col sm:flex-row gap-4 pt-2">
                             @if (Route::has('register'))
-                                <flux:button href="{{ route('register') }}" variant="primary" icon-trailing="arrow-right">
+                                <flux:button href="{{ route('register') }}" variant="primary" icon-trailing="arrow-right" class="shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all">
                                     Start Tracking for Free
                                 </flux:button>
                             @endif
-                            <flux:button href="#features" variant="ghost">
+                            <flux:button href="#features" variant="ghost" class="hover:bg-zinc-100 dark:hover:bg-zinc-800">
                                 Learn More
                             </flux:button>
                         </div>
                     </div>
 
                     <!-- Right Column: Visual -->
-                    <div class="relative lg:block hidden">
+                    <div class="relative lg:block hidden animate-in fade-in slide-in-from-right-4 duration-700 delay-150">
                         <div class="relative">
                             <!-- Mock application cards -->
-                            <div class="space-y-3">
-                                <flux:card class="transform hover:-translate-y-1 transition-transform">
+                            <div class="space-y-4">
+                                <flux:card class="transform hover:-translate-y-2 hover:shadow-xl transition-all duration-300 shadow-lg border-l-4 border-l-blue-500">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
-                                            <div class="size-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                                                <span class="text-white font-bold text-sm">AC</span>
+                                            <div class="size-12 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 flex items-center justify-center shadow-md">
+                                                <span class="text-white font-bold">AC</span>
                                             </div>
                                             <div>
-                                                <flux:heading size="sm">Senior Developer</flux:heading>
+                                                <flux:heading size="sm" class="text-zinc-900 dark:text-white">Senior Developer</flux:heading>
                                                 <flux:text variant="subtle" class="text-xs">Acme Corp</flux:text>
                                             </div>
                                         </div>
-                                        <flux:badge color="lime" size="sm">Interview</flux:badge>
+                                        <flux:badge color="lime" size="sm" class="shadow-sm">Interview</flux:badge>
                                     </div>
                                 </flux:card>
 
-                                <flux:card class="transform hover:-translate-y-1 transition-transform">
+                                <flux:card class="transform hover:-translate-y-2 hover:shadow-xl transition-all duration-300 delay-75 shadow-lg border-l-4 border-l-purple-500">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
-                                            <div class="size-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                                                <span class="text-white font-bold text-sm">TI</span>
+                                            <div class="size-12 rounded-xl bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 flex items-center justify-center shadow-md">
+                                                <span class="text-white font-bold">TI</span>
                                             </div>
                                             <div>
-                                                <flux:heading size="sm">Full Stack Engineer</flux:heading>
+                                                <flux:heading size="sm" class="text-zinc-900 dark:text-white">Full Stack Engineer</flux:heading>
                                                 <flux:text variant="subtle" class="text-xs">Tech Innovators</flux:text>
                                             </div>
                                         </div>
-                                        <flux:badge color="zinc" size="sm">Applied</flux:badge>
+                                        <flux:badge color="zinc" size="sm" class="shadow-sm">Applied</flux:badge>
                                     </div>
                                 </flux:card>
 
-                                <flux:card class="transform hover:-translate-y-1 transition-transform">
+                                <flux:card class="transform hover:-translate-y-2 hover:shadow-xl transition-all duration-300 delay-150 shadow-lg border-l-4 border-l-green-500">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-3">
-                                            <div class="size-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                                                <span class="text-white font-bold text-sm">DS</span>
+                                            <div class="size-12 rounded-xl bg-gradient-to-br from-green-500 via-green-600 to-green-700 flex items-center justify-center shadow-md">
+                                                <span class="text-white font-bold">DS</span>
                                             </div>
                                             <div>
-                                                <flux:heading size="sm">Lead Developer</flux:heading>
+                                                <flux:heading size="sm" class="text-zinc-900 dark:text-white">Lead Developer</flux:heading>
                                                 <flux:text variant="subtle" class="text-xs">Digital Solutions</flux:text>
                                             </div>
                                         </div>
-                                        <flux:badge color="green" size="sm">Offer</flux:badge>
+                                        <flux:badge color="green" size="sm" class="shadow-sm">Offer</flux:badge>
                                     </div>
                                 </flux:card>
                             </div>
 
                             <!-- Floating ATS score card -->
-                            <div class="absolute -right-8 -bottom-8">
-                                <flux:card class="shadow-lg">
-                                    <div class="space-y-2">
+                            <div class="absolute -right-8 -bottom-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                                <flux:card class="shadow-2xl backdrop-blur-sm bg-white/90 dark:bg-zinc-900/90 border-2 border-amber-200 dark:border-amber-900">
+                                    <div class="space-y-3">
                                         <div class="flex items-center gap-2">
-                                            <flux:icon.sparkles variant="solid" class="size-4 text-yellow-500" />
-                                            <flux:text class="text-xs font-medium">ATS Score</flux:text>
+                                            <flux:icon.sparkles variant="solid" class="size-5 text-amber-500 animate-pulse" />
+                                            <flux:text class="text-sm font-semibold">ATS Score</flux:text>
                                         </div>
-                                        <div class="flex items-baseline gap-1">
-                                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">87</span>
-                                            <span class="text-sm text-zinc-500">/100</span>
+                                        <div class="flex items-baseline gap-2">
+                                            <span class="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">87</span>
+                                            <span class="text-sm text-zinc-500 dark:text-zinc-400">/100</span>
                                         </div>
-                                        <div class="w-24 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                            <div class="h-full bg-green-500 rounded-full" style="width: 87%"></div>
+                                        <div class="space-y-1.5">
+                                            <div class="w-32 h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                <div class="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full shadow-sm" style="width: 87%; transition: width 1s ease-out;"></div>
+                                            </div>
+                                            <flux:text variant="subtle" class="text-xs">Excellent score!</flux:text>
                                         </div>
                                     </div>
                                 </flux:card>
@@ -166,20 +177,20 @@
         </div>
 
         <!-- Stats Section -->
-        <div class="border-b bg-zinc-50 dark:bg-zinc-900/50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                    <div class="text-center space-y-2">
-                        <div class="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">24</div>
-                        <flux:subheading>Active Applications</flux:subheading>
+        <div class="border-b bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900/50 dark:to-zinc-950">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    <div class="text-center space-y-3 group">
+                        <div class="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-400 dark:to-blue-500 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">24</div>
+                        <flux:subheading class="text-sm">Active Applications</flux:subheading>
                     </div>
-                    <div class="text-center space-y-2">
-                        <div class="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">5</div>
-                        <flux:subheading>Upcoming Interviews</flux:subheading>
+                    <div class="text-center space-y-3 group">
+                        <div class="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-purple-600 to-purple-700 dark:from-purple-400 dark:to-purple-500 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">5</div>
+                        <flux:subheading class="text-sm">Upcoming Interviews</flux:subheading>
                     </div>
-                    <div class="text-center space-y-2">
-                        <div class="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">87%</div>
-                        <flux:subheading>Average ATS Score</flux:subheading>
+                    <div class="text-center space-y-3 group">
+                        <div class="text-4xl sm:text-5xl font-bold bg-gradient-to-br from-green-600 to-green-700 dark:from-green-400 dark:to-green-500 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">87%</div>
+                        <flux:subheading class="text-sm">Average ATS Score</flux:subheading>
                     </div>
                 </div>
             </div>
@@ -194,10 +205,10 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Feature 1 -->
-                <flux:card class="hover:shadow-md transition-shadow">
-                    <div class="space-y-3">
-                        <div class="size-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                            <flux:icon.clipboard-document-list variant="outline" class="size-5" />
+                <flux:card class="hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-blue-500">
+                    <div class="space-y-4">
+                        <div class="size-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-blue-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <flux:icon.clipboard-document-list variant="outline" class="size-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div class="space-y-2">
                             <flux:heading size="lg">Application Tracking</flux:heading>
@@ -209,10 +220,10 @@
                 </flux:card>
 
                 <!-- Feature 2 -->
-                <flux:card class="hover:shadow-md transition-shadow">
-                    <div class="space-y-3">
-                        <div class="size-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                            <flux:icon.sparkles variant="outline" class="size-5" />
+                <flux:card class="hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-purple-500">
+                    <div class="space-y-4">
+                        <div class="size-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-950 dark:to-purple-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <flux:icon.sparkles variant="outline" class="size-6 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div class="space-y-2">
                             <flux:heading size="lg">AI-Powered CV Analysis</flux:heading>
@@ -224,10 +235,10 @@
                 </flux:card>
 
                 <!-- Feature 3 -->
-                <flux:card class="hover:shadow-md transition-shadow">
-                    <div class="space-y-3">
-                        <div class="size-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                            <flux:icon.document-text variant="outline" class="size-5" />
+                <flux:card class="hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-green-500">
+                    <div class="space-y-4">
+                        <div class="size-12 rounded-xl bg-gradient-to-br from-green-100 to-green-50 dark:from-green-950 dark:to-green-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <flux:icon.document-text variant="outline" class="size-6 text-green-600 dark:text-green-400" />
                         </div>
                         <div class="space-y-2">
                             <flux:heading size="lg">Document Management</flux:heading>
@@ -239,10 +250,10 @@
                 </flux:card>
 
                 <!-- Feature 4 -->
-                <flux:card class="hover:shadow-md transition-shadow">
-                    <div class="space-y-3">
-                        <div class="size-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                            <flux:icon.arrows-right-left variant="outline" class="size-5" />
+                <flux:card class="hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-amber-500">
+                    <div class="space-y-4">
+                        <div class="size-12 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-950 dark:to-amber-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <flux:icon.arrows-right-left variant="outline" class="size-6 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div class="space-y-2">
                             <flux:heading size="lg">Status Workflow</flux:heading>
@@ -254,10 +265,10 @@
                 </flux:card>
 
                 <!-- Feature 5 -->
-                <flux:card class="hover:shadow-md transition-shadow">
-                    <div class="space-y-3">
-                        <div class="size-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                            <flux:icon.magnifying-glass variant="outline" class="size-5" />
+                <flux:card class="hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-pink-500">
+                    <div class="space-y-4">
+                        <div class="size-12 rounded-xl bg-gradient-to-br from-pink-100 to-pink-50 dark:from-pink-950 dark:to-pink-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <flux:icon.magnifying-glass variant="outline" class="size-6 text-pink-600 dark:text-pink-400" />
                         </div>
                         <div class="space-y-2">
                             <flux:heading size="lg">Advanced Filtering</flux:heading>
@@ -269,10 +280,10 @@
                 </flux:card>
 
                 <!-- Feature 6 -->
-                <flux:card class="hover:shadow-md transition-shadow">
-                    <div class="space-y-3">
-                        <div class="size-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                            <flux:icon.moon variant="outline" class="size-5" />
+                <flux:card class="hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-indigo-500">
+                    <div class="space-y-4">
+                        <div class="size-12 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-950 dark:to-indigo-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <flux:icon.moon variant="outline" class="size-6 text-indigo-600 dark:text-indigo-400" />
                         </div>
                         <div class="space-y-2">
                             <flux:heading size="lg">Beautiful UI</flux:heading>
