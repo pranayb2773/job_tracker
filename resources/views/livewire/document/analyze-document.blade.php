@@ -21,21 +21,32 @@
                 @endif
             </flux:subheading>
         </div>
-        <flux:button
-            wire:click="analyzeCV"
-            variant="primary"
-            icon:trailing="sparkles"
-            :disabled="$isAnalyzing"
-        >
-            @if ($isAnalyzing)
-                <flux:icon.arrow-path class="animate-spin" />
-                Analyzing...
-            @elseif ($analysis)
-                Regenerate Analysis
-            @else
-                    Generate Analysis
+        <div class="flex items-center gap-3">
+            @if ($analysis)
+                <flux:button
+                    wire:click="downloadPDF"
+                    variant="outline"
+                    icon:trailing="arrow-down-tray"
+                >
+                    Download PDF
+                </flux:button>
             @endif
-        </flux:button>
+            <flux:button
+                wire:click="analyzeCV"
+                variant="primary"
+                icon:trailing="sparkles"
+                :disabled="$isAnalyzing"
+            >
+                @if ($isAnalyzing)
+                    <flux:icon.arrow-path class="animate-spin" />
+                    Analyzing...
+                @elseif ($analysis)
+                    Regenerate Analysis
+                @else
+                        Generate Analysis
+                @endif
+            </flux:button>
+        </div>
     </div>
 
     @if ($analysis)

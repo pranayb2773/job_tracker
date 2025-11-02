@@ -8,6 +8,13 @@ return [
         'middleware' => [],
         'enabled' => env('PRISM_SERVER_ENABLED', false),
     ],
+
+    // HTTP client configuration for all providers
+    'client' => [
+        'timeout' => env('PRISM_HTTP_TIMEOUT', 180), // 3 minutes for PDF processing
+        'connect_timeout' => env('PRISM_CONNECT_TIMEOUT', 30),
+    ],
+
     'providers' => [
         'openai' => [
             'url' => env('OPENAI_URL', 'https://api.openai.com/v1'),

@@ -10,15 +10,15 @@
     <!-- Title and Create button -->
     <div class="flex items-center justify-between">
         <flux:heading size="xl">{{ __('Applications') }}</flux:heading>
-        <flux:modal.trigger name="create-application">
-            <flux:button
-                icon:trailing="cloud-arrow-up"
-                size="sm"
-                variant="primary"
-            >
-                {{ __('Create Application') }}
-            </flux:button>
-        </flux:modal.trigger>
+        <flux:button
+            href="{{ route('applications.create') }}"
+            wire:navigate
+            icon-trailing="plus"
+            size="sm"
+            variant="primary"
+        >
+            {{ __('Create Application') }}
+        </flux:button>
     </div>
 
     <!-- Filters and Table -->

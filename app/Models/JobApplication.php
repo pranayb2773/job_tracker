@@ -12,6 +12,34 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 final class JobApplication extends Model
 {
+    protected $fillable = [
+        'user_id',
+        'job_title',
+        'job_description',
+        'job_url',
+        'organisation',
+        'source',
+        'source_url',
+        'work_arrangement',
+        'salary_range',
+        'salary_min',
+        'status',
+        'priority',
+        'application_date',
+        'screening_date',
+        'interview_date',
+        'technical_test_date',
+        'final_interview_date',
+        'follow_up_date',
+        'offer_date',
+        'accepted_date',
+        'rejected_date',
+        'withdrawn_date',
+        'deadline',
+        'notes',
+        'tags',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -19,7 +47,7 @@ final class JobApplication extends Model
 
     public function documents(): BelongsToMany
     {
-        return $this->belongsToMany(JobApplicationDocument::class, 'job_application_documents')
+        return $this->belongsToMany(Document::class, 'job_application_documents')
             ->withTimestamps();
     }
 

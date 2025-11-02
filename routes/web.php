@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\Application\CreateJobApplication;
 use App\Livewire\Application\ListJobApplications;
 use App\Livewire\Document\AnalyzeDocument;
 use App\Livewire\Document\ListDocuments;
@@ -36,8 +37,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('two-factor.show');
 
     Route::get('applications', ListJobApplications::class)->name('applications.list');
+    Route::get('applications/create', CreateJobApplication::class)->name('applications.create');
     Route::get('documents', ListDocuments::class)->name('documents.list');
     Route::get('documents/{document:file_hash}/analyze', AnalyzeDocument::class)->name('documents.analyze');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

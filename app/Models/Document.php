@@ -35,7 +35,7 @@ final class Document extends Model
 
     public function jobApplications(): BelongsToMany
     {
-        return $this->belongsToMany(JobApplication::class, 'job_application_document')
+        return $this->belongsToMany(JobApplication::class, 'job_application_documents')
             ->withTimestamps();
     }
 

@@ -32,7 +32,7 @@
                 <x-confirmation-modal
                     name="delete-documents-bulk"
                     heading="Delete selected documents?"
-                    click-event="deleteDocumentsBulk"
+                    click-event="deleteSelectedDocuments"
                 >
                     <x-slot:subHeading>
                         <p>Are you sure you would like to do this?</p>
