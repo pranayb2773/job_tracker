@@ -53,6 +53,20 @@
                         {{ __('Documents') }}
                     </flux:navlist.item>
                 </flux:navlist.group>
+                <flux:navlist.group
+                    :heading="__('AI Tools')"
+                    class="grid"
+                    expandable
+                >
+                    <flux:navlist.item
+                        icon="sparkles"
+                        :href="route('role-analysis.show')"
+                        :current="request()->routeIs('role-analysis.show')"
+                        wire:navigate
+                    >
+                        {{ __('Role Analysis') }}
+                    </flux:navlist.item>
+                </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />

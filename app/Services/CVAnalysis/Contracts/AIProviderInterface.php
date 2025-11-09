@@ -19,6 +19,14 @@ interface AIProviderInterface
     ): AnalysisResult;
 
     /**
+     * Analyze text content using AI.
+     */
+    public function analyzeText(
+        string $text,
+        string $systemPrompt
+    ): string;
+
+    /**
      * Get the provider name.
      */
     public function name(): string;

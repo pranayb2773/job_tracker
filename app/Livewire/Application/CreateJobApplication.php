@@ -19,8 +19,6 @@ final class CreateJobApplication extends Component
 
     public bool $showDocumentModal = false;
 
-    public bool $showFastTrackModal = false;
-
     public array $selectedDocumentIds = [];
 
     public function mount(): void
@@ -69,16 +67,6 @@ final class CreateJobApplication extends Component
     public function closeDocumentModal(): void
     {
         $this->showDocumentModal = false;
-    }
-
-    public function openFastTrackModal(): void
-    {
-        $this->showFastTrackModal = true;
-    }
-
-    public function closeFastTrackModal(): void
-    {
-        $this->showFastTrackModal = false;
     }
 
     public function attachDocument(int $documentId): void

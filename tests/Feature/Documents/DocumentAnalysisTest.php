@@ -121,9 +121,8 @@ describe('Analysis Generation', function () {
 
         Prism::fake([$fakeResponse]);
 
-        // Use a real test PDF file
-        $testPdfPath = base_path('tests/Fixtures/test-cv.pdf');
-        $file = new UploadedFile($testPdfPath, 'test-cv.pdf', 'application/pdf', null, true);
+        // Create a fake PDF file for testing
+        $file = UploadedFile::fake()->create('test-cv.pdf', 100, 'application/pdf');
         $path = Storage::disk('local')->put('documents/user-1', $file);
 
         $document = Document::factory()->create([

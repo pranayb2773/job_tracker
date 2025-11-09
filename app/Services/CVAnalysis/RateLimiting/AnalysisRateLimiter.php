@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\RateLimiter;
 final readonly class AnalysisRateLimiter
 {
     public function __construct(
-        private int $dailyLimit = 10
+        private int $dailyLimit = 10,
+        private int $roleAnalysisDailyLimit = 20
     )
     {
     }
@@ -21,13 +22,14 @@ final readonly class AnalysisRateLimiter
      *
      * @throws AnalysisRateLimitException
      */
-    public function check(User $user): void
+    public function check(User $user, string $type = 'cv_analysis'): void
     {
-        $key = $this->getKey($user);
+        $key = $this->getKey($user, $type);
+        $limit = $this->getLimit($type);
 
-        if (RateLimiter::tooManyAttempts($key, $this->dailyLimit)) {
+        if (RateLimiter::tooManyAttempts($key, $limit)) {
             throw new AnalysisRateLimitException(
-                limit: $this->dailyLimit,
+                limit: $limit,
                 remaining: 0,
                 resetInSeconds: $this->getDecayInSeconds(),
             );
@@ -35,11 +37,47 @@ final readonly class AnalysisRateLimiter
     }
 
     /**
+     * Attempt to perform an analysis (check and hit in one call).
+     */
+    public function attempt(User $user, string $type = 'cv_analysis'): bool
+    {
+        $key = $this->getKey($user, $type);
+        $limit = $this->getLimit($type);
+
+        if (RateLimiter::tooManyAttempts($key, $limit)) {
+            return false;
+        }
+
+        $this->hit($user, $type);
+
+        return true;
+    }
+
+    /**
+     * Check if user has too many attempts.
+     */
+    public function tooManyAttempts(User $user, string $type = 'cv_analysis'): bool
+    {
+        $key = $this->getKey($user, $type);
+        $limit = $this->getLimit($type);
+
+        return RateLimiter::tooManyAttempts($key, $limit);
+    }
+
+    /**
+     * Get available at timestamp.
+     */
+    public function availableAt(User $user, string $type = 'cv_analysis'): \Carbon\Carbon
+    {
+        return now()->addSeconds($this->getDecayInSeconds());
+    }
+
+    /**
      * Record an analysis attempt.
      */
-    public function hit(User $user): void
+    public function hit(User $user, string $type = 'cv_analysis'): void
     {
-        $key = $this->getKey($user);
+        $key = $this->getKey($user, $type);
         $decayInSeconds = $this->getDecayInSeconds();
 
         RateLimiter::hit($key, $decayInSeconds);
@@ -48,19 +86,31 @@ final readonly class AnalysisRateLimiter
     /**
      * Get remaining analyses for the user.
      */
-    public function remaining(User $user): int
+    public function remaining(User $user, string $type = 'cv_analysis'): int
     {
-        $key = $this->getKey($user);
+        $key = $this->getKey($user, $type);
+        $limit = $this->getLimit($type);
 
-        return max(0, $this->dailyLimit - RateLimiter::attempts($key));
+        return max(0, $limit - RateLimiter::attempts($key));
     }
 
     /**
      * Get the rate limiter key for a user.
      */
-    private function getKey(User $user): string
+    private function getKey(User $user, string $type = 'cv_analysis'): string
     {
-        return "cv_analysis:{$user->id}:daily";
+        return "{$type}:{$user->id}:daily";
+    }
+
+    /**
+     * Get limit based on analysis type.
+     */
+    private function getLimit(string $type): int
+    {
+        return match ($type) {
+            'role_analysis' => $this->roleAnalysisDailyLimit,
+            default => $this->dailyLimit,
+        };
     }
 
     /**

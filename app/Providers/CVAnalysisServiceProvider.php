@@ -9,6 +9,7 @@ use App\Services\CVAnalysis\CVAnalysisService;
 use App\Services\CVAnalysis\Providers\ClaudeProvider;
 use App\Services\CVAnalysis\Providers\GeminiProvider;
 use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
+use App\Services\RoleAnalysis\RoleAnalysisService;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 
@@ -45,15 +46,50 @@ final class CVAnalysisServiceProvider extends ServiceProvider
 
         // Bind the Rate Limiter
         $this->app->singleton(AnalysisRateLimiter::class, function ($app) {
-            $dailyLimit = config('ai.cv_analysis.rate_limit.daily_limit', 10);
+            $cvDailyLimit = config('ai.cv_analysis.rate_limit.daily_limit', 10);
+            $roleDailyLimit = config('ai.role_analysis.rate_limit.daily_limit', 20);
 
-            return new AnalysisRateLimiter(dailyLimit: $dailyLimit);
+            return new AnalysisRateLimiter(
+                dailyLimit: $cvDailyLimit,
+                roleAnalysisDailyLimit: $roleDailyLimit
+            );
         });
 
         // Bind the CV Analysis Service
         $this->app->singleton(CVAnalysisService::class, function ($app) {
             return new CVAnalysisService(
                 provider: $app->make(AIProviderInterface::class),
+                rateLimiter: $app->make(AnalysisRateLimiter::class)
+            );
+        });
+
+        // Bind the Role Analysis Service with dedicated AI provider
+        $this->app->singleton(RoleAnalysisService::class, function ($app) {
+            // Get role analysis provider configuration
+            $provider = config('ai.role_analysis.default_provider', config('ai.cv_analysis.default_provider'));
+            $baseProviderConfig = config("ai.cv_analysis.providers.{$provider}");
+
+            if (! $baseProviderConfig) {
+                throw new InvalidArgumentException("Invalid role analysis provider: {$provider}");
+            }
+
+            // Create provider with role analysis specific configuration
+            $roleAnalysisProvider = match ($provider) {
+                'gemini' => new GeminiProvider(
+                    model: $baseProviderConfig['model'],
+                    timeout: config('ai.role_analysis.timeout', $baseProviderConfig['timeout']),
+                    maxTokens: config('ai.role_analysis.max_tokens', 8000),
+                ),
+                'claude' => new ClaudeProvider(
+                    model: $baseProviderConfig['model'],
+                    timeout: config('ai.role_analysis.timeout', $baseProviderConfig['timeout']),
+                    maxTokens: config('ai.role_analysis.max_tokens', 8000),
+                ),
+                default => throw new InvalidArgumentException("Unsupported provider: {$provider}"),
+            };
+
+            return new RoleAnalysisService(
+                aiProvider: $roleAnalysisProvider,
                 rateLimiter: $app->make(AnalysisRateLimiter::class)
             );
         });

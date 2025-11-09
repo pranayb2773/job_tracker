@@ -47,4 +47,35 @@ return [
             ],
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Role Analysis Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for AI-powered job description role analysis.
+    |
+    */
+
+    'role_analysis' => [
+        /*
+        | Default AI provider for role analysis.
+        | Supported: 'gemini', 'claude', 'openai'
+        */
+        'default_provider' => env('ROLE_ANALYSIS_PROVIDER', env('CV_ANALYSIS_PROVIDER', 'gemini')),
+
+        /*
+        | Rate limiting configuration
+        */
+        'rate_limit' => [
+            'daily_limit' => (int)env('ROLE_ANALYSIS_DAILY_LIMIT', 20),
+        ],
+
+        /*
+        | AI configuration for role analysis
+        | Role analysis requires more tokens and time due to comprehensive output format
+        */
+        'timeout' => (int)env('ROLE_ANALYSIS_TIMEOUT', 240),
+        'max_tokens' => (int)env('ROLE_ANALYSIS_MAX_TOKENS', 8000),
+    ],
 ];

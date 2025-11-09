@@ -66,7 +66,7 @@ final class ClaudeProvider implements AIProviderInterface
                 ->withSystemPrompt($systemPrompt)
                 ->withClientOptions([
                     'timeout' => $this->timeout,
-                    'connect_timeout' => 30,
+                    'connect_timeout' => 60,
                 ])
                 ->withMessages($messages)
                 ->withMaxTokens($this->maxTokens)
@@ -133,6 +133,57 @@ final class ClaudeProvider implements AIProviderInterface
     public function model(): string
     {
         return $this->model;
+    }
+
+    public function analyzeText(
+        string $text,
+        string $systemPrompt
+    ): string {
+        $messages = [
+            new UserMessage($text),
+        ];
+
+        try {
+            $response = Prism::text()
+                ->using(Provider::Anthropic, $this->model)
+                ->withSystemPrompt($systemPrompt)
+                ->withClientOptions([
+                    'timeout' => $this->timeout,
+                    'connect_timeout' => 60,
+                ])
+                ->withMessages($messages)
+                ->withMaxTokens($this->maxTokens)
+                ->asText();
+        } catch (PrismRateLimitedException $e) {
+            throw new Exception('AI service rate limit exceeded. Please try again in a few moments.');
+        } catch (PrismProviderOverloadedException $e) {
+            throw new Exception('AI service is currently overloaded. Please try again later.');
+        } catch (PrismRequestTooLargeException $e) {
+            throw new Exception('The text is too large to analyze. Please try a shorter description.');
+        } catch (PrismException $e) {
+            throw new Exception('An error occurred while communicating with the AI service: ' . $e->getMessage());
+        }
+
+        // Clean the response - remove Markdown code fences if present
+        $responseText = $response->text;
+        $responseText = preg_replace('/^```json\s*/m', '', $responseText);
+        $responseText = preg_replace('/\s*```$/m', '', $responseText);
+        $responseText = trim($responseText);
+
+        // Check if response appears truncated (doesn't end with })
+        if (!preg_match('/\}[\s]*$/', $responseText)) {
+            logger('AI text response appears truncated', [
+                'response_length' => strlen($responseText),
+                'response_end' => substr($responseText, -100),
+            ]);
+            throw new Exception('AI response was truncated. The analysis may be incomplete. Please try again.');
+        }
+
+        // Remove problematic control characters but don't re-encode
+        // Remove null bytes and control characters except \t, \n, \r
+        $responseText = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $responseText);
+
+        return $responseText;
     }
 
     /**

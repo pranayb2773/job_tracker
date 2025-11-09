@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Livewire\AI\RoleAnalysis;
 use App\Livewire\Application\CreateJobApplication;
 use App\Livewire\Application\ListJobApplications;
 use App\Livewire\Document\AnalyzeDocument;
@@ -40,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('applications/create', CreateJobApplication::class)->name('applications.create');
     Route::get('documents', ListDocuments::class)->name('documents.list');
     Route::get('documents/{document:file_hash}/analyze', AnalyzeDocument::class)->name('documents.analyze');
+    Route::get('role-analysis', RoleAnalysis::class)->name('role-analysis.show');
 });
 
 require __DIR__ . '/auth.php';

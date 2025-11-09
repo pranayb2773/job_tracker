@@ -21,15 +21,23 @@
     </flux:breadcrumbs>
 
     <!-- Header -->
-    <div class="flex items-center justify-between">
-        <flux:heading size="xl">{{ __('New job application') }}</flux:heading>
-        <div class="flex items-center gap-3">
-            <flux:button wire:click="cancel" variant="ghost">
+    <div class="flex items-start justify-between">
+        <div>
+            <flux:heading size="xl">
+                {{ __('New Job Application') }}
+            </flux:heading>
+            <flux:text class="mt-1 text-zinc-600 dark:text-zinc-400">
+                {{ __('Track a new job opportunity by filling in the details below.') }}
+            </flux:text>
+        </div>
+        <div class="flex items-start gap-3">
+            <flux:button wire:click="cancel" variant="ghost" size="sm">
                 {{ __('Cancel') }}
             </flux:button>
             <flux:button
                 wire:click="save"
                 variant="primary"
+                size="sm"
                 icon-trailing="check"
             >
                 {{ __('Create') }}
@@ -42,32 +50,20 @@
         <!-- Left Column (2/3 width) -->
         <div class="space-y-6 lg:col-span-2">
             <!-- Basic Information -->
-            <flux:card class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <flux:heading size="lg">
-                        {{ __('Basic information') }}
-                    </flux:heading>
-                    <flux:button
-                        type="button"
-                        wire:click="openFastTrackModal"
-                        variant="ghost"
-                        size="sm"
-                        icon-trailing="sparkles"
-                    >
-                        {{ __('AI Extract') }}
-                    </flux:button>
-                </div>
-                <flux:separator />
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
+                <flux:heading size="lg">
+                    {{ __('Basic Information') }}
+                </flux:heading>
 
                 <div class="space-y-6">
                     <flux:field>
                         <flux:label>
-                            {{ __('Job title') }}
-                            <span class="text-red-500">*</span>
+                            {{ __('Job Title') }}
+                            <span class="text-red-500 pl-0.5">*</span>
                         </flux:label>
                         <flux:input
                             wire:model="form.job_title"
-                            placeholder="Enter the job title"
+                            placeholder="e.g., Senior Product Designer"
                         />
                         <flux:error name="form.job_title" />
                     </flux:field>
@@ -75,28 +71,27 @@
                     <flux:field>
                         <flux:label>
                             {{ __('Organisation') }}
-                            <span class="text-red-500">*</span>
+                            <span class="text-red-500 pl-0.5">*</span>
                         </flux:label>
                         <flux:input
                             wire:model="form.organisation"
-                            placeholder="Enter the organisation or company name"
+                            placeholder="e.g., Acme Inc.."
                         />
                         <flux:error name="form.organisation" />
                     </flux:field>
                 </div>
-            </flux:card>
+            </div>
 
             <!-- Job Description -->
-            <flux:card class="space-y-6">
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
                 <div class="flex items-center justify-between">
                     <flux:heading size="lg">
-                        {{ __('Job description') }}
+                        {{ __('Job Description') }}
                     </flux:heading>
                     <flux:badge size="sm" color="zinc" inset="top bottom">
                         {{ __('Optional') }}
                     </flux:badge>
                 </div>
-                <flux:separator />
                 <flux:field>
                     <flux:editor
                         wire:model="form.job_description"
@@ -104,20 +99,19 @@
                     />
                     <flux:error name="form.job_description" />
                 </flux:field>
-            </flux:card>
+            </div>
 
             <!-- Job Details -->
-            <flux:card class="space-y-6">
-                <flux:heading size="lg">{{ __('Job details') }}</flux:heading>
-                <flux:separator />
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
+                <flux:heading size="lg">{{ __('Job Details') }}</flux:heading>
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <flux:field>
-                        <flux:label>{{ __('Working model') }}</flux:label>
+                        <flux:label>{{ __('Working Model') }}</flux:label>
                         <flux:select
                             wire:model="form.work_arrangement"
                             variant="listbox"
-                            placeholder="Select a working model"
+                            placeholder="Select a model"
                         >
                             <flux:select.option value="remote">
                                 {{ __('Remote') }}
@@ -143,7 +137,7 @@
                     </flux:field>
 
                     <flux:field>
-                        <flux:label>{{ __('Salary range') }}</flux:label>
+                        <flux:label>{{ __('Salary Range') }}</flux:label>
                         <flux:input
                             wire:model="form.salary_range"
                             placeholder="e.g., £50,000 - £70,000"
@@ -152,34 +146,33 @@
                     </flux:field>
 
                     <flux:field>
-                        <flux:label>{{ __('Minimum salary') }}</flux:label>
+                        <flux:label>{{ __('Minimum Salary') }}</flux:label>
                         <flux:input
                             type="number"
                             wire:model="form.salary_min"
-                            placeholder="0"
+                            placeholder="50000"
                         />
                         <flux:error name="form.salary_min" />
                     </flux:field>
                 </div>
-            </flux:card>
+            </div>
 
             <!-- Source -->
-            <flux:card class="space-y-6">
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
                 <flux:heading size="lg">{{ __('Source') }}</flux:heading>
-                <flux:separator />
 
                 <div class="space-y-6">
                     <flux:field>
                         <flux:label>{{ __('Link to job advert') }}</flux:label>
                         <flux:input
                             wire:model="form.job_url"
-                            placeholder="https://"
+                            placeholder="https://..."
                         />
                         <flux:error name="form.job_url" />
                     </flux:field>
 
                     <flux:field>
-                        <flux:label>{{ __('Source') }}</flux:label>
+                        <flux:label>{{ __('Source type') }}</flux:label>
                         <flux:input
                             wire:model="form.source"
                             placeholder="e.g., LinkedIn, Company Website, Referral"
@@ -193,7 +186,7 @@
                         </flux:label>
                         <flux:input
                             wire:model="form.source_url"
-                            placeholder="https://"
+                            placeholder="https://..."
                         />
                         <flux:description>
                             {{ __('If found on a job board (LinkedIn, Indeed, etc.)') }}
@@ -201,12 +194,11 @@
                         <flux:error name="form.source_url" />
                     </flux:field>
                 </div>
-            </flux:card>
+            </div>
 
             <!-- Documents -->
-            <flux:card class="space-y-6">
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
                 <flux:heading size="lg">{{ __('Documents') }}</flux:heading>
-                <flux:separator />
 
                 <flux:field>
                     <flux:label>{{ __('Attach documents') }}</flux:label>
@@ -265,12 +257,11 @@
                         {{ __('Select file') }}
                     </flux:button>
                 </div>
-            </flux:card>
+            </div>
 
             <!-- Notes -->
-            <flux:card class="space-y-6">
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
                 <flux:heading size="lg">{{ __('Notes') }}</flux:heading>
-                <flux:separator />
                 <flux:field>
                     <flux:editor
                         wire:model="form.notes"
@@ -278,20 +269,19 @@
                     />
                     <flux:error name="form.notes" />
                 </flux:field>
-            </flux:card>
+            </div>
         </div>
 
-        <!-- Right Column (1/3 width) - Status Sidebar -->
+        <!-- Right Column (1/3 width) -->
         <div class="space-y-6 lg:col-span-1">
             <!-- Status -->
-            <flux:card class="space-y-6">
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
                 <flux:heading size="lg">{{ __('Status') }}</flux:heading>
-                <flux:separator />
 
                 <flux:field>
                     <flux:label>
                         {{ __('Status') }}
-                        <span class="text-red-500">*</span>
+                        <span class="text-red-500 pl-0.5">*</span>
                     </flux:label>
                     <flux:select wire:model="form.status" variant="listbox">
                         @foreach (ApplicationStatus::cases() as $status)
@@ -306,7 +296,7 @@
                 <flux:field>
                     <flux:label>
                         {{ __('Application date') }}
-                        <span class="text-red-500">*</span>
+                        <span class="text-red-500 pl-0.5">*</span>
                     </flux:label>
                     <flux:date-picker wire:model="form.application_date">
                         <x-slot name="trigger">
@@ -315,14 +305,13 @@
                     </flux:date-picker>
                     <flux:error name="form.application_date" />
                 </flux:field>
-            </flux:card>
+            </div>
 
             <!-- Priority & Tags -->
-            <flux:card class="space-y-6">
+            <div class="space-y-6 rounded-lg bg-zinc-50 p-6 dark:bg-zinc-900">
                 <flux:heading size="lg">
                     {{ __('Priority & Tags') }}
                 </flux:heading>
-                <flux:separator />
 
                 <flux:field>
                     <flux:label>{{ __('Priority') }}</flux:label>
@@ -367,55 +356,9 @@
 
                     <flux:error name="form.tags" />
                 </flux:field>
-            </flux:card>
+            </div>
         </div>
     </form>
-
-    <!-- Fast Track Modal -->
-    <flux:modal
-        name="fast-track"
-        variant="flyout"
-        wire:model="showFastTrackModal"
-    >
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">
-                    {{ __('AI Extract from Job Advert') }}
-                </flux:heading>
-                <flux:text>
-                    {{ __('Paste the job advert URL to automatically extract job details.') }}
-                </flux:text>
-            </div>
-
-            <flux:separator />
-
-            <flux:field>
-                <flux:label>{{ __('Job advert URL') }}</flux:label>
-                <flux:input wire:model="form.job_url" placeholder="https://" />
-                <flux:description>
-                    {{ __('Experimental AI. Extract job details from the advert page.') }}
-                    {{ __('Always use valid URLs from the organisation\'s website.') }}
-                    {{ __('Avoid URLs from job search sites like LinkedIn, Indeed, etc.') }}
-                </flux:description>
-                <flux:error name="form.job_url" />
-            </flux:field>
-
-            <flux:separator />
-
-            <div class="flex items-center justify-between">
-                <flux:button wire:click="closeFastTrackModal" variant="ghost">
-                    {{ __('Close') }}
-                </flux:button>
-                <flux:button
-                    wire:click="closeFastTrackModal"
-                    variant="primary"
-                    icon-trailing="sparkles"
-                >
-                    {{ __('Extract Details') }}
-                </flux:button>
-            </div>
-        </div>
-    </flux:modal>
 
     <!-- Document Selection Modal -->
     <flux:modal

@@ -19,19 +19,22 @@ use Prism\Prism\ValueObjects\Media\Document as PrismDocument;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 
-final class GeminiProvider implements AIProviderInterface
+final readonly class GeminiProvider implements AIProviderInterface
 {
     public function __construct(
-        private readonly string $model = 'gemini-2.5-flash',
-        private readonly int $timeout = 180,
-        private readonly int $maxTokens = 4000,
-    ) {}
+        private string $model = 'gemini-2.5-flash',
+        private int    $timeout = 180,
+        private int    $maxTokens = 4000,
+    )
+    {
+    }
 
     public function analyze(
         Document $document,
-        string $systemPrompt,
-        ?array $previousAnalysis = null
-    ): AnalysisResult {
+        string   $systemPrompt,
+        ?array   $previousAnalysis = null
+    ): AnalysisResult
+    {
         $filePath = Storage::disk('local')->path($document->file_path);
 
         // Create document for analysis (Gemini has automatic implicit caching)
@@ -64,7 +67,7 @@ final class GeminiProvider implements AIProviderInterface
                 ->withSystemPrompt($systemPrompt)
                 ->withClientOptions([
                     'timeout' => $this->timeout,
-                    'connect_timeout' => 30,
+                    'connect_timeout' => 60,
                 ])
                 ->withMessages($messages)
                 ->withMaxTokens($this->maxTokens)
@@ -131,6 +134,58 @@ final class GeminiProvider implements AIProviderInterface
     public function model(): string
     {
         return $this->model;
+    }
+
+    public function analyzeText(
+        string $text,
+        string $systemPrompt
+    ): string
+    {
+        $messages = [
+            new UserMessage($text),
+        ];
+
+        try {
+            $response = Prism::text()
+                ->using(Provider::Gemini, $this->model)
+                ->withSystemPrompt($systemPrompt)
+                ->withClientOptions([
+                    'timeout' => $this->timeout,
+                    'connect_timeout' => 60,
+                ])
+                ->withMessages($messages)
+                ->withMaxTokens($this->maxTokens)
+                ->asText();
+        } catch (PrismRateLimitedException $e) {
+            throw new Exception('AI service rate limit exceeded. Please try again in a few moments.');
+        } catch (PrismProviderOverloadedException $e) {
+            throw new Exception('AI service is currently overloaded. Please try again later.');
+        } catch (PrismRequestTooLargeException $e) {
+            throw new Exception('The text is too large to analyze. Please try a shorter description.');
+        } catch (PrismException $e) {
+            throw new Exception('An error occurred while communicating with the AI service: ' . $e->getMessage());
+        }
+
+        // Clean the response - remove Markdown code fences if present
+        $responseText = $response->text;
+        $responseText = preg_replace('/^```json\s*/m', '', $responseText);
+        $responseText = preg_replace('/\s*```$/m', '', $responseText);
+        $responseText = trim($responseText);
+
+        // Check if response appears truncated (doesn't end with })
+        if (!preg_match('/\}[\s]*$/', $responseText)) {
+            logger('AI text response appears truncated', [
+                'response_length' => strlen($responseText),
+                'response_end' => substr($responseText, -100),
+            ]);
+            throw new Exception('AI response was truncated. The analysis may be incomplete. Please try again.');
+        }
+
+        // Remove problematic control characters but don't re-encode
+        // Remove null bytes and control characters except \t, \n, \r
+        $responseText = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $responseText);
+
+        return $responseText;
     }
 
     /**
