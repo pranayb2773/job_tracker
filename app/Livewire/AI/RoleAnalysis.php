@@ -10,6 +10,10 @@ use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Component;
+use Spatie\Browsershot\Browsershot;
+use Spatie\LaravelPdf\Facades\Pdf;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 final class RoleAnalysis extends Component
 {
@@ -58,7 +62,7 @@ final class RoleAnalysis extends Component
                 heading: 'Daily Limit Reached',
                 variant: 'warning',
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Flux::toast(
                 text: 'An error occurred while analyzing the role. Please try again.',
                 heading: 'Analysis Failed',
@@ -77,6 +81,42 @@ final class RoleAnalysis extends Component
     public function clearAnalysis(): void
     {
         $this->reset('analysis', 'jobDescription');
+    }
+
+    public function downloadAnalysis(): StreamedResponse
+    {
+        if (!$this->analysis) {
+            Flux::toast(
+                text: 'No analysis available to download.',
+                heading: 'Download Failed',
+                variant: 'danger',
+            );
+
+            return response()->streamDownload(fn() => '', '');
+        }
+
+        $html = view('pdf.role-analysis', [
+            'analysis' => $this->analysis,
+        ])->render();
+
+        $fileName = 'role-analysis-' . date('Y-m-d-His') . '.pdf';
+
+        // Generate PDF to temporary file
+        $tempPath = storage_path('app/temp/' . uniqid('pdf_') . '.pdf');
+
+        Pdf::html($html)
+            ->format('A4')
+            ->withBrowsershot(function (Browsershot $browsershot): void {
+                $browsershot->scale(0.8);
+                $browsershot->margins(10, 10, 10, 10);
+            })
+            ->save($tempPath);
+
+        // Stream the file and delete after
+        return response()->streamDownload(function () use ($tempPath): void {
+            echo file_get_contents($tempPath);
+            @unlink($tempPath);
+        }, $fileName);
     }
 
     public function render(): View

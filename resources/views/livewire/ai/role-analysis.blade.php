@@ -15,12 +15,14 @@
                 Analyze job descriptions to identify key requirements and optimize your application strategy
             </flux:subheading>
         </div>
-        <div class="flex items-center gap-3">
-            <flux:badge color="blue" size="lg">
-                <flux:icon.sparkles class="size-4" />
-                {{ $remainingAnalyses }} remaining today
-            </flux:badge>
-        </div>
+        @if (!$analysis && !$isAnalyzing)
+            <div class="flex items-center gap-3">
+                <flux:badge color="blue" size="lg">
+                    <flux:icon.sparkles class="size-4" />
+                    {{ $remainingAnalyses }} remaining today
+                </flux:badge>
+            </div>
+        @endif
     </div>
 
     {{-- Input Form or Analysis Results --}}
@@ -80,144 +82,70 @@ Responsibilities:
     {{-- Analysis Results --}}
     @if ($analysis)
         <div class="space-y-6">
-            {{-- Action Buttons --}}
-            <div class="flex items-center justify-end gap-3">
-                <flux:button
-                    wire:click="clearAnalysis"
-                    variant="ghost"
-                    icon="arrow-path"
-                >
-                    Analyze Another Role
-                </flux:button>
+            {{-- Action Bar --}}
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <flux:badge color="blue" size="lg" class="self-start">
+                    <flux:icon.sparkles class="size-4" />
+                    {{ $remainingAnalyses }} remaining today
+                </flux:badge>
+
+                <div class="flex items-center gap-3">
+                    <flux:button
+                        wire:click="downloadAnalysis"
+                        variant="primary"
+                        icon="arrow-down-tray"
+                    >
+                        Download PDF
+                    </flux:button>
+                    <flux:button
+                        wire:click="clearAnalysis"
+                        variant="outline"
+                        icon="arrow-path"
+                    >
+                        New Analysis
+                    </flux:button>
+                </div>
             </div>
 
-            {{-- Score Summary Card --}}
-            @if (isset($analysis['application_strategy']['recommendation_score']))
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {{-- Score Gauge --}}
-                    <flux:card class="col-span-1">
-                        <div class="flex flex-col items-center justify-center py-8">
-                            <div class="relative size-48">
-                                <svg
-                                    class="size-48 transform -rotate-90"
-                                    viewBox="0 0 200 200"
-                                >
-                                    {{-- Background circle --}}
-                                    <circle
-                                        cx="100"
-                                        cy="100"
-                                        r="85"
-                                        stroke="currentColor"
-                                        stroke-width="20"
-                                        fill="none"
-                                        class="text-zinc-200 dark:text-zinc-700"
-                                    />
-                                    {{-- Progress circle --}}
-                                    <circle
-                                        cx="100"
-                                        cy="100"
-                                        r="85"
-                                        stroke="currentColor"
-                                        stroke-width="20"
-                                        fill="none"
-                                        stroke-linecap="round"
-                                        class="{{ $analysis['application_strategy']['recommendation_score'] >= 80 ? 'text-green-500' : ($analysis['application_strategy']['recommendation_score'] >= 60 ? 'text-blue-500' : ($analysis['application_strategy']['recommendation_score'] >= 40 ? 'text-yellow-500' : 'text-red-500')) }}"
-                                        style="
-                                            stroke-dasharray: {{ 2 * 3.14159 * 85 }};
-                                            stroke-dashoffset: {{ 2 * 3.14159 * 85 * (1 - $analysis['application_strategy']['recommendation_score'] / 100) }};
-                                        "
-                                    />
-                                </svg>
-                                <div
-                                    class="absolute inset-0 flex flex-col items-center justify-center"
-                                >
-                                    <div
-                                        class="text-5xl font-bold text-zinc-900 dark:text-white"
-                                    >
-                                        {{ $analysis['application_strategy']['recommendation_score'] }}
-                                    </div>
-                                    <div
-                                        class="text-sm font-medium text-zinc-600 dark:text-zinc-400"
-                                    >
-                                        {{ $analysis['application_strategy']['recommendation_label'] ?? 'SCORE' }}
-                                    </div>
+            {{-- Comprehensive Overview --}}
+            @if (isset($analysis['comprehensive_overview']))
+                <flux:card>
+                    <flux:heading size="lg" class="mb-4">Comprehensive Overview</flux:heading>
+                    <p class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
+                        {{ $analysis['comprehensive_overview']['summary'] ?? 'No summary available.' }}
+                    </p>
+
+                    @if (isset($analysis['comprehensive_overview']['actionable_takeaway']))
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <div class="flex items-start gap-3">
+                                <flux:icon.light-bulb class="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                                        Actionable Takeaway
+                                    </p>
+                                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                                        {{ $analysis['comprehensive_overview']['actionable_takeaway'] }}
+                                    </p>
                                 </div>
-                            </div>
-                            <div class="mt-6 text-center">
-                                <p
-                                    class="text-sm text-zinc-600 dark:text-zinc-400 max-w-xs"
-                                >
-                                    Overall recommendation score based on role clarity, requirements, and opportunity quality
-                                </p>
                             </div>
                         </div>
-                    </flux:card>
-
-                    {{-- Overview Summary --}}
-                    <flux:card class="col-span-1 lg:col-span-2">
-                        <div class="space-y-6">
-                            <div>
-                                <div class="flex items-center justify-between mb-3">
-                                    <flux:heading size="lg">Role Overview</flux:heading>
-                                    <flux:badge color="blue" variant="outline">
-                                        <flux:icon.sparkles class="size-3.5" />
-                                        AI Analysis
-                                    </flux:badge>
-                                </div>
-                                <p
-                                    class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed"
-                                >
-                                    {{ $analysis['comprehensive_overview']['summary'] ?? 'No summary available.' }}
-                                </p>
-                            </div>
-
-                            @if (isset($analysis['comprehensive_overview']['actionable_takeaway']))
-                                <flux:separator variant="subtle" />
-
-                                <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                                    <div class="flex items-start gap-3">
-                                        <flux:icon.light-bulb class="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                                        <div>
-                                            <p class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
-                                                Key Takeaway
-                                            </p>
-                                            <p class="text-sm text-blue-800 dark:text-blue-200">
-                                                {{ $analysis['comprehensive_overview']['actionable_takeaway'] }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    </flux:card>
-                </div>
+                    @endif
+                </flux:card>
             @endif
 
             {{-- Keywords Section --}}
             @if (isset($analysis['keywords']) && count($analysis['keywords']) > 0)
                 <flux:card>
-                    <flux:heading size="lg" class="mb-1">Keywords to Emphasize</flux:heading>
+                    <flux:heading size="lg" class="mb-2">Keywords</flux:heading>
                     <flux:subheading class="mb-6">
-                        Most relevant terms and phrases for your CV and cover letter
+                        List the 10 most relevant keywords and phrases (including variations) that a candidate should emphasize in their CV and cover letter. Use these terms naturally throughout your application materials to increase visibility to Applicant Tracking Systems (ATS) and demonstrate relevance.
                     </flux:subheading>
 
-                    <flux:separator variant="subtle" class="mb-6" />
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @foreach ($analysis['keywords'] as $item)
-                            <div class="flex gap-3 p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800">
-                                <div class="flex-shrink-0">
-                                    <flux:badge
-                                        :color="match($item['priority'] ?? 'medium') {
-                                            'high' => 'red',
-                                            'medium' => 'yellow',
-                                            'low' => 'zinc',
-                                            default => 'zinc'
-                                        }"
-                                        size="sm"
-                                    >
-                                        {{ ucfirst($item['priority'] ?? 'medium') }}
-                                    </flux:badge>
+                    <div class="space-y-4">
+                        @foreach ($analysis['keywords'] as $index => $item)
+                            <div class="flex gap-3">
+                                <div class="flex-shrink-0 w-6 text-center">
+                                    <span class="font-semibold text-blue-600 dark:text-blue-400">{{ $index + 1 }}.</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
@@ -230,313 +158,174 @@ Responsibilities:
                             </div>
                         @endforeach
                     </div>
-                </flux:card>
-            @endif
 
-            {{-- Skills Section --}}
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {{-- Hard Skills --}}
-                @if (isset($analysis['hard_skills']) && count($analysis['hard_skills']) > 0)
-                    <flux:card>
-                        <flux:heading size="lg" class="mb-1">Hard Skills</flux:heading>
-                        <flux:subheading class="mb-6">
-                            Critical technical competencies
-                        </flux:subheading>
-
-                        <flux:separator variant="subtle" class="mb-6" />
-
-                        <div class="space-y-5">
-                            @foreach ($analysis['hard_skills'] as $skill)
-                                <div class="space-y-2">
-                                    <div class="flex items-center gap-2">
-                                        <flux:heading size="sm" class="text-zinc-900 dark:text-zinc-100">
-                                            {{ $skill['skill'] }}
-                                        </flux:heading>
-                                        @if ($skill['required'] ?? false)
-                                            <flux:badge color="red" size="sm">Required</flux:badge>
-                                        @endif
-                                    </div>
-                                    <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                                        {{ $skill['description'] }}
-                                    </p>
-                                    @if (isset($skill['example']))
-                                        <div class="mt-2 p-3 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
-                                            <p class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                                                <flux:icon.light-bulb class="inline size-3.5" />
-                                                Example:
-                                            </p>
-                                            <p class="text-sm text-zinc-600 dark:text-zinc-400 italic">
-                                                "{{ $skill['example'] }}"
-                                            </p>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    </flux:card>
-                @endif
-
-                {{-- Soft Skills --}}
-                @if (isset($analysis['soft_skills']) && count($analysis['soft_skills']) > 0)
-                    <flux:card>
-                        <flux:heading size="lg" class="mb-1">Soft Skills</flux:heading>
-                        <flux:subheading class="mb-6">
-                            Essential interpersonal qualities
-                        </flux:subheading>
-
-                        <flux:separator variant="subtle" class="mb-6" />
-
-                        <div class="space-y-5">
-                            @foreach ($analysis['soft_skills'] as $skill)
-                                <div class="space-y-2">
-                                    <div class="flex items-center gap-2">
-                                        <flux:heading size="sm" class="text-zinc-900 dark:text-zinc-100">
-                                            {{ $skill['skill'] }}
-                                        </flux:heading>
-                                        @if (isset($skill['importance']))
-                                            <flux:badge
-                                                :color="match($skill['importance']) {
-                                                    'critical' => 'red',
-                                                    'high' => 'yellow',
-                                                    'medium' => 'zinc',
-                                                    default => 'zinc'
-                                                }"
-                                                size="sm"
-                                            >
-                                                {{ ucfirst($skill['importance']) }}
-                                            </flux:badge>
-                                        @endif
-                                    </div>
-                                    <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                                        {{ $skill['description'] }}
-                                    </p>
-                                    @if (isset($skill['example']))
-                                        <div class="mt-2 p-3 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
-                                            <p class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
-                                                <flux:icon.light-bulb class="inline size-3.5" />
-                                                Example:
-                                            </p>
-                                            <p class="text-sm text-zinc-600 dark:text-zinc-400 italic">
-                                                "{{ $skill['example'] }}"
-                                            </p>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    </flux:card>
-                @endif
-            </div>
-
-            {{-- Ideal Candidate Profile --}}
-            @if (isset($analysis['ideal_candidate_profile']))
-                <flux:card>
-                    <flux:heading size="lg" class="mb-1">Ideal Candidate Profile</flux:heading>
-                    <flux:subheading class="mb-6">
-                        Target attributes and application recommendations
-                    </flux:subheading>
-
-                    <flux:separator variant="subtle" class="mb-6" />
-
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            @if (isset($analysis['ideal_candidate_profile']['experience_level']))
-                                <div class="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800">
-                                    <p class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-2">
-                                        Experience Level
-                                    </p>
-                                    <flux:badge color="blue" size="lg">
-                                        {{ $analysis['ideal_candidate_profile']['experience_level'] }}
-                                    </flux:badge>
-                                </div>
-                            @endif
-                            @if (isset($analysis['ideal_candidate_profile']['years_of_experience']))
-                                <div class="p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800">
-                                    <p class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-2">
-                                        Years of Experience
-                                    </p>
-                                    <p class="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                                        {{ $analysis['ideal_candidate_profile']['years_of_experience'] }}
-                                    </p>
-                                </div>
-                            @endif
-                        </div>
-
-                        @if (isset($analysis['ideal_candidate_profile']['key_attributes']) && count($analysis['ideal_candidate_profile']['key_attributes']) > 0)
-                            <div>
-                                <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
-                                    Key Attributes
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    @foreach ($analysis['ideal_candidate_profile']['key_attributes'] as $attribute)
-                                        <flux:badge color="purple" variant="outline">
-                                            {{ $attribute }}
-                                        </flux:badge>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-
-                        @if (isset($analysis['ideal_candidate_profile']['tailoring_recommendations']) && count($analysis['ideal_candidate_profile']['tailoring_recommendations']) > 0)
-                            <div>
-                                <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
-                                    <flux:icon.check-circle class="inline size-4" />
-                                    Tailoring Recommendations
-                                </p>
-                                <ul class="space-y-2">
-                                    @foreach ($analysis['ideal_candidate_profile']['tailoring_recommendations'] as $index => $recommendation)
-                                        <li class="flex gap-3 text-sm text-zinc-600 dark:text-zinc-400">
-                                            <span class="font-semibold text-blue-600 dark:text-blue-400">{{ $index + 1 }}.</span>
-                                            <span>{{ $recommendation }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
+                    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <p class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                            Actionable Takeaway
+                        </p>
+                        <p class="text-sm text-blue-800 dark:text-blue-200">
+                            Prioritize these keywords throughout your CV and cover letter, tailoring your language to match the job description's terminology.
+                        </p>
                     </div>
                 </flux:card>
             @endif
 
-            {{-- Red & Green Flags --}}
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {{-- Red Flags --}}
-                @if (isset($analysis['red_flags']) && count($analysis['red_flags']) > 0)
-                    <flux:card>
-                        <flux:heading size="lg" class="text-red-600 dark:text-red-400 mb-6">
-                            <flux:icon.exclamation-triangle class="inline size-5" />
-                            Red Flags
-                        </flux:heading>
+            {{-- Hard Skills and Soft Skills in Two Column Layout --}}
+            @if ((isset($analysis['hard_skills']) && count($analysis['hard_skills']) > 0) || (isset($analysis['soft_skills']) && count($analysis['soft_skills']) > 0))
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {{-- Hard Skills --}}
+                    @if (isset($analysis['hard_skills']) && count($analysis['hard_skills']) > 0)
+                        <flux:card>
+                            <flux:heading size="lg" class="mb-2">Hard Skills</flux:heading>
+                            <flux:subheading class="mb-6">
+                                List up to 5 of the most critical technical or job-specific skills required for success in this role. Highlight these skills prominently on your CV, providing specific examples of how you've used them to achieve results.
+                            </flux:subheading>
 
-                        <div class="space-y-3">
-                            @foreach ($analysis['red_flags'] as $flag)
-                                <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                                    <div class="flex items-start gap-3">
-                                        <flux:badge
-                                            :color="match($flag['severity'] ?? 'medium') {
-                                                'high' => 'red',
-                                                'medium' => 'yellow',
-                                                'low' => 'zinc',
-                                                default => 'zinc'
-                                            }"
-                                            size="sm"
-                                            class="flex-shrink-0"
-                                        >
-                                            {{ ucfirst($flag['severity'] ?? 'medium') }}
-                                        </flux:badge>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-sm text-red-900 dark:text-red-100 mb-1">
-                                                {{ $flag['flag'] }}
-                                            </p>
-                                            <p class="text-xs text-red-700 dark:text-red-300">
-                                                {{ $flag['explanation'] }}
-                                            </p>
+                            <div class="space-y-5">
+                                @foreach ($analysis['hard_skills'] as $index => $skill)
+                                    <div class="space-y-2">
+                                        <div class="flex items-start gap-2">
+                                            <span class="font-semibold text-blue-600 dark:text-blue-400 flex-shrink-0">{{ $index + 1 }}.</span>
+                                            <div class="flex-1">
+                                                <flux:heading size="sm" class="text-zinc-900 dark:text-zinc-100">
+                                                    {{ $skill['skill'] }}
+                                                </flux:heading>
+                                            </div>
                                         </div>
+                                        <p class="text-sm text-zinc-600 dark:text-zinc-400 ml-6">
+                                            {{ $skill['description'] }}
+                                        </p>
+                                        @if (isset($skill['example']))
+                                            <div class="mt-2 ml-6 p-3 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
+                                                <p class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                                                    Example:
+                                                </p>
+                                                <p class="text-sm text-zinc-600 dark:text-zinc-400 italic">
+                                                    "{{ $skill['example'] }}"
+                                                </p>
+                                            </div>
+                                        @endif
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </flux:card>
-                @endif
+                                @endforeach
+                            </div>
 
-                {{-- Green Flags --}}
-                @if (isset($analysis['green_flags']) && count($analysis['green_flags']) > 0)
-                    <flux:card>
-                        <flux:heading size="lg" class="text-green-600 dark:text-green-400 mb-6">
-                            <flux:icon.check-circle class="inline size-5" />
-                            Green Flags
-                        </flux:heading>
+                            <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <p class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                                    Actionable Takeaway
+                                </p>
+                                <p class="text-sm text-blue-800 dark:text-blue-200">
+                                    Showcase your technical skills with specific examples of how you've applied them to solve problems and achieve results.
+                                </p>
+                            </div>
+                        </flux:card>
+                    @endif
 
-                        <div class="space-y-3">
-                            @foreach ($analysis['green_flags'] as $flag)
-                                <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                    <div class="flex items-start gap-3">
-                                        <flux:badge
-                                            :color="match($flag['significance'] ?? 'medium') {
-                                                'high' => 'green',
-                                                'medium' => 'blue',
-                                                'low' => 'zinc',
-                                                default => 'zinc'
-                                            }"
-                                            size="sm"
-                                            class="flex-shrink-0"
-                                        >
-                                            {{ ucfirst($flag['significance'] ?? 'medium') }}
-                                        </flux:badge>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-sm text-green-900 dark:text-green-100 mb-1">
-                                                {{ $flag['flag'] }}
-                                            </p>
-                                            <p class="text-xs text-green-700 dark:text-green-300">
-                                                {{ $flag['explanation'] }}
-                                            </p>
+                    {{-- Soft Skills --}}
+                    @if (isset($analysis['soft_skills']) && count($analysis['soft_skills']) > 0)
+                        <flux:card>
+                            <flux:heading size="lg" class="mb-2">Soft Skills</flux:heading>
+                            <flux:subheading class="mb-6">
+                                List up to 5 of the most important interpersonal and communication skills needed for this position. Showcase these soft skills through stories and examples of how you've collaborated effectively with others or demonstrated leadership qualities.
+                            </flux:subheading>
+
+                            <div class="space-y-5">
+                                @foreach ($analysis['soft_skills'] as $index => $skill)
+                                    <div class="space-y-2">
+                                        <div class="flex items-start gap-2">
+                                            <span class="font-semibold text-blue-600 dark:text-blue-400 flex-shrink-0">{{ $index + 1 }}.</span>
+                                            <div class="flex-1">
+                                                <flux:heading size="sm" class="text-zinc-900 dark:text-zinc-100">
+                                                    {{ $skill['skill'] }}
+                                                </flux:heading>
+                                            </div>
                                         </div>
+                                        <p class="text-sm text-zinc-600 dark:text-zinc-400 ml-6">
+                                            {{ $skill['description'] }}
+                                        </p>
+                                        @if (isset($skill['example']))
+                                            <div class="mt-2 ml-6 p-3 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700">
+                                                <p class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                                                    Example:
+                                                </p>
+                                                <p class="text-sm text-zinc-600 dark:text-zinc-400 italic">
+                                                    "{{ $skill['example'] }}"
+                                                </p>
+                                            </div>
+                                        @endif
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </flux:card>
-                @endif
-            </div>
+                                @endforeach
+                            </div>
 
-            {{-- Application Strategy --}}
-            @if (isset($analysis['application_strategy']))
+                            <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <p class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                                    Actionable Takeaway
+                                </p>
+                                <p class="text-sm text-blue-800 dark:text-blue-200">
+                                    Weave stories into your CV and cover letter that demonstrate your ability to work effectively with others, solve problems, and communicate clearly.
+                                </p>
+                            </div>
+                        </flux:card>
+                    @endif
+                </div>
+            @endif
+
+            {{-- Ideal Candidate Profile and Tailoring Recommendations --}}
+            @if (isset($analysis['ideal_candidate_profile']))
                 <flux:card>
-                    <flux:heading size="lg" class="mb-1">Application Strategy</flux:heading>
+                    <flux:heading size="lg" class="mb-2">Ideal Candidate Profile and Tailoring Recommendations</flux:heading>
                     <flux:subheading class="mb-6">
-                        Actionable recommendations to maximize your chances
+                        Summarize the key attributes, experiences, and motivations of an ideal candidate. Provide specific recommendations on how to tailor your CV and cover letter to align with this profile.
                     </flux:subheading>
 
-                    <flux:separator variant="subtle" class="mb-6" />
-
                     <div class="space-y-6">
-                        @if (isset($analysis['application_strategy']['key_selling_points']) && count($analysis['application_strategy']['key_selling_points']) > 0)
+                        @if (isset($analysis['ideal_candidate_profile']['summary']))
                             <div>
-                                <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
-                                    <flux:icon.star class="inline size-4 text-yellow-500" />
-                                    Key Selling Points
+                                <p class="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                                    {{ $analysis['ideal_candidate_profile']['summary'] }}
                                 </p>
-                                <ul class="space-y-2">
-                                    @foreach ($analysis['application_strategy']['key_selling_points'] as $index => $point)
-                                        <li class="flex gap-3 text-sm text-zinc-600 dark:text-zinc-400">
-                                            <span class="font-semibold text-blue-600 dark:text-blue-400">{{ $index + 1 }}.</span>
-                                            <span>{{ $point }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
                             </div>
                         @endif
 
-                        @if (isset($analysis['application_strategy']['cover_letter_focus']) && count($analysis['application_strategy']['cover_letter_focus']) > 0)
-                            <div>
-                                <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
-                                    <flux:icon.document-text class="inline size-4" />
-                                    Cover Letter Focus
-                                </p>
-                                <ul class="space-y-2">
-                                    @foreach ($analysis['application_strategy']['cover_letter_focus'] as $index => $focus)
-                                        <li class="flex gap-3 text-sm text-zinc-600 dark:text-zinc-400">
-                                            <span class="font-semibold text-purple-600 dark:text-purple-400">{{ $index + 1 }}.</span>
-                                            <span>{{ $focus }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
+                        @if (isset($analysis['ideal_candidate_profile']['tailoring_recommendations']))
+                            <flux:separator variant="subtle" />
 
-                        @if (isset($analysis['application_strategy']['interview_preparation']) && count($analysis['application_strategy']['interview_preparation']) > 0)
                             <div>
                                 <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
-                                    <flux:icon.chat-bubble-left-right class="inline size-4" />
-                                    Interview Preparation
+                                    Tailoring Recommendations:
                                 </p>
-                                <ul class="space-y-2">
-                                    @foreach ($analysis['application_strategy']['interview_preparation'] as $index => $prep)
-                                        <li class="flex gap-3 text-sm text-zinc-600 dark:text-zinc-400">
-                                            <span class="font-semibold text-green-600 dark:text-green-400">{{ $index + 1 }}.</span>
-                                            <span>{{ $prep }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
+
+                                @if (isset($analysis['ideal_candidate_profile']['tailoring_recommendations']['cv']))
+                                    <div class="mb-4">
+                                        <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">
+                                            <flux:icon.document-text class="inline size-4" />
+                                            CV:
+                                        </p>
+                                        <p class="text-sm text-zinc-600 dark:text-zinc-400 ml-6">
+                                            {{ $analysis['ideal_candidate_profile']['tailoring_recommendations']['cv'] }}
+                                        </p>
+                                    </div>
+                                @endif
+
+                                @if (isset($analysis['ideal_candidate_profile']['tailoring_recommendations']['cover_letter']))
+                                    <div>
+                                        <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">
+                                            <flux:icon.document-text class="inline size-4" />
+                                            Cover Letter:
+                                        </p>
+                                        <p class="text-sm text-zinc-600 dark:text-zinc-400 ml-6">
+                                            {{ $analysis['ideal_candidate_profile']['tailoring_recommendations']['cover_letter'] }}
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <p class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                                    Actionable Takeaway
+                                </p>
+                                <p class="text-sm text-blue-800 dark:text-blue-200">
+                                    Position yourself as a well-rounded candidate who is not only technically skilled but also aligned with the role's requirements and eager to contribute to the organization's mission.
+                                </p>
                             </div>
                         @endif
                     </div>

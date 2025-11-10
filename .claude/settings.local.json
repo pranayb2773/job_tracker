@@ -6,7 +6,10 @@
       "Bash(composer show)",
       "Bash(php artisan make:test:*)",
       "Bash(php artisan test:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(php vendor/bin/pint:*)",
+      "Bash(if not exist \"storage\\app\\temp\" mkdir \"storage\\app\\temp\")",
+      "Bash(storage/app/temp/.gitignore)"
     ],
     "deny": [],
     "ask": []
