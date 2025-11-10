@@ -44,6 +44,22 @@ final class JobApplicationForm extends Form
 
     public ?string $status = null;
 
+    public ?string $screening_date = null;
+
+    public ?string $interview_date = null;
+
+    public ?string $technical_test_date = null;
+
+    public ?string $final_interview_date = null;
+
+    public ?string $offer_date = null;
+
+    public ?string $accepted_date = null;
+
+    public ?string $rejected_date = null;
+
+    public ?string $withdrawn_date = null;
+
     public ?string $priority = null;
 
     public array $tags = [];
@@ -67,6 +83,14 @@ final class JobApplicationForm extends Form
             'salary_range' => ['nullable', 'string', 'max:255'],
             'salary_min' => ['nullable', 'integer', 'min:0'],
             'application_date' => ['required', 'date'],
+            'screening_date' => ['nullable', 'date'],
+            'interview_date' => ['nullable', 'date'],
+            'technical_test_date' => ['nullable', 'date'],
+            'final_interview_date' => ['nullable', 'date'],
+            'offer_date' => ['nullable', 'date'],
+            'accepted_date' => ['nullable', 'date'],
+            'rejected_date' => ['nullable', 'date'],
+            'withdrawn_date' => ['nullable', 'date'],
             'deadline' => ['nullable', 'date', 'after_or_equal:application_date'],
             'status' => ['required', Rule::enum(ApplicationStatus::class)],
             'priority' => ['nullable', Rule::enum(ApplicationPriority::class)],
@@ -107,6 +131,14 @@ final class JobApplicationForm extends Form
                 'salary_range' => $this->salary_range,
                 'salary_min' => $this->salary_min,
                 'application_date' => $this->application_date,
+                'screening_date' => $this->screening_date,
+                'interview_date' => $this->interview_date,
+                'technical_test_date' => $this->technical_test_date,
+                'final_interview_date' => $this->final_interview_date,
+                'offer_date' => $this->offer_date,
+                'accepted_date' => $this->accepted_date,
+                'rejected_date' => $this->rejected_date,
+                'withdrawn_date' => $this->withdrawn_date,
                 'deadline' => $this->deadline,
                 'status' => $this->status ?? ApplicationStatus::Applied->value,
                 'priority' => $this->priority ?? ApplicationPriority::Medium->value,
@@ -144,6 +176,14 @@ final class JobApplicationForm extends Form
         $this->salary_range = $application->salary_range;
         $this->salary_min = $application->salary_min;
         $this->application_date = $application->application_date?->format('Y-m-d');
+        $this->screening_date = $application->screening_date?->format('Y-m-d');
+        $this->interview_date = $application->interview_date?->format('Y-m-d');
+        $this->technical_test_date = $application->technical_test_date?->format('Y-m-d');
+        $this->final_interview_date = $application->final_interview_date?->format('Y-m-d');
+        $this->offer_date = $application->offer_date?->format('Y-m-d');
+        $this->accepted_date = $application->accepted_date?->format('Y-m-d');
+        $this->rejected_date = $application->rejected_date?->format('Y-m-d');
+        $this->withdrawn_date = $application->withdrawn_date?->format('Y-m-d');
         $this->deadline = $application->deadline?->format('Y-m-d');
         $this->status = $application->status->value;
         $this->priority = $application->priority->value;
@@ -157,6 +197,9 @@ final class JobApplicationForm extends Form
         $this->validate();
 
         return DB::transaction(function () use ($application) {
+            // Preserve previously saved stage dates unless explicitly changed
+            $preserve = fn($prop, $attr) => $prop !== null ? $prop : $application->$attr?->format('Y-m-d');
+
             $application->update([
                 'job_title' => $this->job_title,
                 'organisation' => $this->organisation,
@@ -170,6 +213,14 @@ final class JobApplicationForm extends Form
                 'salary_range' => $this->salary_range,
                 'salary_min' => $this->salary_min,
                 'application_date' => $this->application_date,
+                'screening_date' => $preserve($this->screening_date, 'screening_date'),
+                'interview_date' => $preserve($this->interview_date, 'interview_date'),
+                'technical_test_date' => $preserve($this->technical_test_date, 'technical_test_date'),
+                'final_interview_date' => $preserve($this->final_interview_date, 'final_interview_date'),
+                'offer_date' => $preserve($this->offer_date, 'offer_date'),
+                'accepted_date' => $preserve($this->accepted_date, 'accepted_date'),
+                'rejected_date' => $preserve($this->rejected_date, 'rejected_date'),
+                'withdrawn_date' => $preserve($this->withdrawn_date, 'withdrawn_date'),
                 'deadline' => $this->deadline,
                 'status' => $this->status,
                 'priority' => $this->priority,

@@ -36,6 +36,15 @@
                 {{ __('Cancel') }}
             </flux:button>
             <flux:button
+                href="{{ route('applications.show', $application) }}"
+                variant="outline"
+                size="sm"
+                icon="eye"
+                wire:navigate
+            >
+                {{ __('View') }}
+            </flux:button>
+            <flux:button
                 wire:click="save"
                 variant="primary"
                 size="sm"
@@ -328,6 +337,90 @@
                     </flux:date-picker>
                     <flux:error name="form.application_date" />
                 </flux:field>
+
+                @php($currentStatus = $this->form->status ?? null)
+
+                @if ($currentStatus === ApplicationStatus::Screening->value)
+                    <flux:field>
+                        <flux:label>{{ __('Screening date') }}</flux:label>
+                        <flux:date-picker wire:model="form.screening_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.screening_date" />
+                    </flux:field>
+                @elseif ($currentStatus === ApplicationStatus::Interview->value)
+                    <flux:field>
+                        <flux:label>{{ __('Interview date') }}</flux:label>
+                        <flux:date-picker wire:model="form.interview_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.interview_date" />
+                    </flux:field>
+                @elseif ($currentStatus === ApplicationStatus::TechnicalTest->value)
+                    <flux:field>
+                        <flux:label>{{ __('Technical test date') }}</flux:label>
+                        <flux:date-picker wire:model="form.technical_test_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.technical_test_date" />
+                    </flux:field>
+                @elseif ($currentStatus === ApplicationStatus::FinalInterview->value)
+                    <flux:field>
+                        <flux:label>{{ __('Final interview date') }}</flux:label>
+                        <flux:date-picker wire:model="form.final_interview_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.final_interview_date" />
+                    </flux:field>
+                @elseif ($currentStatus === ApplicationStatus::Offer->value)
+                    <flux:field>
+                        <flux:label>{{ __('Offer date') }}</flux:label>
+                        <flux:date-picker wire:model="form.offer_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.offer_date" />
+                    </flux:field>
+                @elseif ($currentStatus === ApplicationStatus::Accepted->value)
+                    <flux:field>
+                        <flux:label>{{ __('Accepted date') }}</flux:label>
+                        <flux:date-picker wire:model="form.accepted_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.accepted_date" />
+                    </flux:field>
+                @elseif ($currentStatus === ApplicationStatus::Rejected->value)
+                    <flux:field>
+                        <flux:label>{{ __('Rejected date') }}</flux:label>
+                        <flux:date-picker wire:model="form.rejected_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.rejected_date" />
+                    </flux:field>
+                @elseif ($currentStatus === ApplicationStatus::Withdrawn->value)
+                    <flux:field>
+                        <flux:label>{{ __('Withdrawn date') }}</flux:label>
+                        <flux:date-picker wire:model="form.withdrawn_date">
+                            <x-slot name="trigger">
+                                <flux:date-picker.input />
+                            </x-slot>
+                        </flux:date-picker>
+                        <flux:error name="form.withdrawn_date" />
+                    </flux:field>
+                @endif
             </div>
 
             <!-- Priority & Tags -->

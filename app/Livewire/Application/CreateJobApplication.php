@@ -33,12 +33,12 @@ final class CreateJobApplication extends Component
         $application = $this->form->store();
 
         Flux::toast(
-            text: 'Application updated successfully.',
-            heading: 'Application Updated',
+            text: 'Application created successfully.',
+            heading: 'Application Created',
             variant: 'success',
         );
 
-        $this->redirect(route('applications.list'), navigate: true);
+        $this->redirect(route('applications.show', $application), navigate: true);
     }
 
     public function cancel(): void

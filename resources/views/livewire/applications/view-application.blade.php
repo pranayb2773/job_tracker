@@ -1,4 +1,4 @@
-<div class="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-6 py-6">
+<div class="mx-auto flex h-full w-full flex-1 flex-col gap-4">
     {{-- Breadcrumbs --}}
     <flux:breadcrumbs>
         <flux:breadcrumbs.item href="{{ route('dashboard') }}" wire:navigate>
@@ -49,8 +49,18 @@
 
     {{-- Tabs --}}
     <flux:tab.group>
-        <flux:tabs wire:model="activeTab">
+        <flux:tabs>
             <flux:tab name="details">{{ __('Details') }}</flux:tab>
+            @if ($application->job_description)
+                <flux:tab name="job-description">
+                    {{ __('Job Description') }}
+                </flux:tab>
+            @endif
+
+            @if ($application->notes)
+                <flux:tab name="notes">{{ __('Notes') }}</flux:tab>
+            @endif
+
             <flux:tab name="ai">
                 <div class="flex items-center gap-2">
                     {{ __('AI') }}
@@ -66,7 +76,7 @@
                 <div class="space-y-6 lg:col-span-2">
                     {{-- Basic Information --}}
                     <div
-                        class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
                     >
                         <flux:heading size="lg">
                             {{ __('Basic Information') }}
@@ -95,25 +105,9 @@
                         </div>
                     </div>
 
-                    {{-- Job Description --}}
-                    @if ($application->job_description)
-                        <div
-                            class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
-                        >
-                            <flux:heading size="lg">
-                                {{ __('Job Description') }}
-                            </flux:heading>
-                            <div
-                                class="prose prose-sm dark:prose-invert max-w-none"
-                            >
-                                {!! $application->job_description !!}
-                            </div>
-                        </div>
-                    @endif
-
                     {{-- Job Details --}}
                     <div
-                        class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
                     >
                         <flux:heading size="lg">
                             {{ __('Job Details') }}
@@ -202,7 +196,7 @@
 
                     {{-- Source --}}
                     <div
-                        class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
                     >
                         <flux:heading size="lg">
                             {{ __('Source') }}
@@ -288,7 +282,7 @@
 
                     {{-- Documents --}}
                     <div
-                        class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
                     >
                         <flux:heading size="lg">
                             {{ __('Documents') }}
@@ -335,79 +329,49 @@
                             </div>
                         @endif
                     </div>
-
-                    {{-- Notes --}}
-                    @if ($application->notes)
-                        <div
-                            class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
-                        >
-                            <flux:heading size="lg">
-                                {{ __('Notes') }}
-                            </flux:heading>
-                            <div
-                                class="prose prose-sm dark:prose-invert max-w-none"
-                            >
-                                {!! $application->notes !!}
-                            </div>
-                        </div>
-                    @endif
                 </div>
 
                 {{-- Right Column (1/3 width) --}}
                 <div class="space-y-6 lg:col-span-1">
                     {{-- Status --}}
                     <div
-                        class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
                     >
                         <flux:heading size="lg">
-                            {{ __('Status') }}
+                            {{ __('Status, Priority & Tags') }}
                         </flux:heading>
 
-                        <div>
-                            <flux:label>{{ __('Status') }}</flux:label>
-                            <div class="mt-2">
-                                <flux:badge
-                                    color="{{ $application->status->getColor() }}"
-                                    size="lg"
-                                >
-                                    {{ $application->status->getLabel() }}
-                                </flux:badge>
-                            </div>
-                        </div>
-
-                        <div>
-                            <flux:label>
-                                {{ __('Application date') }}
-                            </flux:label>
-                            <p class="mt-2 text-zinc-900 dark:text-zinc-100">
-                                {{ $application->application_date ? $application->application_date->format('d M Y') : __('Not specified') }}
-                            </p>
-                        </div>
-                    </div>
-
-                    {{-- Priority & Tags --}}
-                    <div
-                        class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
-                    >
-                        <flux:heading size="lg">
-                            {{ __('Priority & Tags') }}
-                        </flux:heading>
-
-                        <div>
-                            <flux:label>{{ __('Priority') }}</flux:label>
-                            <div class="mt-2">
-                                @if ($application->priority)
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div>
+                                <flux:label>{{ __('Status') }}</flux:label>
+                                <div class="mt-2">
                                     <flux:badge
-                                        color="{{ $application->priority->getColor() }}"
-                                        size="lg"
+                                        color="{{ $application->status->getColor() }}"
+                                        size="sm"
                                     >
-                                        {{ $application->priority->getLabel() }}
+                                        {{ $application->status->getLabel() }}
                                     </flux:badge>
-                                @else
-                                    <p class="text-zinc-500 dark:text-zinc-400">
-                                        {{ __('Not set') }}
-                                    </p>
-                                @endif
+                                </div>
+                            </div>
+
+                            <div>
+                                <flux:label>{{ __('Priority') }}</flux:label>
+                                <div class="mt-2">
+                                    @if ($application->priority)
+                                        <flux:badge
+                                            color="{{ $application->priority->getColor() }}"
+                                            size="sm"
+                                        >
+                                            {{ $application->priority->getLabel() }}
+                                        </flux:badge>
+                                    @else
+                                        <p
+                                            class="text-zinc-500 dark:text-zinc-400"
+                                        >
+                                            {{ __('Not set') }}
+                                        </p>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
@@ -433,7 +397,7 @@
 
                     {{-- Timeline --}}
                     <div
-                        class="space-y-6 rounded-lg bg-zinc-100 p-6 dark:bg-zinc-900"
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
                     >
                         <flux:heading size="lg">
                             {{ __('Timeline') }}
@@ -489,88 +453,253 @@
                                     </div>
                                 </div>
                             @endif
+
+                            @if ($application->screening_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500"
+                                    >
+                                        <flux:icon.shield-check
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->screening_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Screening') }}
+                                            {{ $application->screening_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($application->interview_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500"
+                                    >
+                                        <flux:icon.calendar
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->interview_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Interview') }}
+                                            {{ $application->interview_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($application->technical_test_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-500"
+                                    >
+                                        <flux:icon.document-text
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->technical_test_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Technical Test') }}
+                                            {{ $application->technical_test_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($application->final_interview_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-500"
+                                    >
+                                        <flux:icon.calendar
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->final_interview_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Final Interview') }}
+                                            {{ $application->final_interview_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($application->offer_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-500"
+                                    >
+                                        <flux:icon.calendar
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->offer_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Offer') }}
+                                            {{ $application->offer_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($application->accepted_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500"
+                                    >
+                                        <flux:icon.shield-check
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->accepted_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Accepted') }}
+                                            {{ $application->accepted_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($application->rejected_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500"
+                                    >
+                                        <flux:icon.calendar
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->rejected_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Rejected') }}
+                                            {{ $application->rejected_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if ($application->withdrawn_date)
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-500"
+                                    >
+                                        <flux:icon.calendar
+                                            class="size-4 text-white"
+                                        />
+                                    </div>
+                                    <div class="flex-1">
+                                        <div
+                                            class="font-medium text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {{ $application->withdrawn_date->format('d/m/Y') }}
+                                        </div>
+                                        <div
+                                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                                        >
+                                            {{ __('Withdrawn') }}
+                                            {{ $application->withdrawn_date->diffForHumans() }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
         </flux:tab.panel>
 
-        {{-- AI Tab Panel --}}
-        <flux:tab.panel name="ai">
-            <div class="space-y-6">
-                <flux:card>
-                    <flux:heading size="lg" class="mb-4">
-                        {{ __('Tools') }}
-                    </flux:heading>
-
-                    <p class="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
-                        {{ __('Get a gap analysis between your profile and the role. Tailor it to showcase your most relevant skills and experience.') }}
-                    </p>
-
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <flux:button variant="primary" icon="sparkles">
-                                {{ __('Regenerate analysis') }}
-                            </flux:button>
-                            <flux:button variant="outline" icon="trash">
-                                {{ __('Clear') }}
-                            </flux:button>
-                        </div>
-
+        {{-- Job Description Tab Panel --}}
+        @if ($application->job_description)
+            <flux:tab.panel name="job-description">
+                <div class="space-y-6">
+                    <div
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
+                    >
+                        <flux:heading size="lg">
+                            {{ __('Job Description') }}
+                        </flux:heading>
                         <div
-                            class="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400"
+                            class="prose prose-sm dark:prose-invert max-w-none"
                         >
-                            <div class="flex items-center gap-2">
-                                <flux:icon.shield-check class="size-5" />
-                                {{ __('Ghosting protection') }}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <flux:icon.chart-bar class="size-5" />
-                                {{ __('Job advert analysis') }}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <flux:icon.cog class="size-5" />
-                                {{ __('Profile matching') }}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <flux:icon.document-text class="size-5" />
-                                {{ __('Cover letter inspiration') }}
-                            </div>
+                            {!! $application->job_description !!}
                         </div>
                     </div>
-                </flux:card>
+                </div>
+            </flux:tab.panel>
+        @endif
 
-                {{-- AI Analysis Results --}}
-                <flux:card>
-                    <flux:heading size="xl" class="mb-4">
-                        {{ __('Overall matching score: 75%') }}
-                    </flux:heading>
-
-                    <p
-                        class="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400"
+        {{-- Notes Tab Panel --}}
+        @if ($application->notes)
+            <flux:tab.panel name="notes">
+                <div class="space-y-6">
+                    <div
+                        class="space-y-6 rounded-lg bg-zinc-100 p-6 text-sm dark:bg-zinc-900"
                     >
-                        {{ __('Your CV demonstrates a strong foundation in PHP development, particularly with Laravel and Symfony, aligning well with the requirements of the Senior PHP Developer role at 6B. Your experience with RESTful APIs, Agile methodologies, and database design further strengthens your candidacy. However, there are a few areas where the match could be improved to better highlight your qualifications for this specific position.') }}
-                    </p>
-                </flux:card>
+                        <flux:heading size="lg">
+                            {{ __('Notes') }}
+                        </flux:heading>
+                        <div
+                            class="prose prose-sm dark:prose-invert max-w-none"
+                        >
+                            {!! $application->notes !!}
+                        </div>
+                    </div>
+                </div>
+            </flux:tab.panel>
+        @endif
 
-                <flux:card>
-                    <flux:heading size="lg" class="mb-2">
-                        {{ __('Presentation and formatting score: 7/10') }}
-                    </flux:heading>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                        {{ __('The CV is well-structured and easy to read, but could benefit from a more modern design to enhance its visual appeal. Consider using a template that balances aesthetics with ATS compatibility to make a stronger first impression.') }}
-                    </p>
-                </flux:card>
-
-                <flux:card>
-                    <flux:heading size="lg" class="mb-2">
-                        {{ __('Readability and tone score: 8/10') }}
-                    </flux:heading>
-                    <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                        {{ __('The content is clear and professional, maintaining an appropriate tone throughout. Minor improvements could be made to ensure consistency in formatting and language.') }}
-                    </p>
-                </flux:card>
-            </div>
-        </flux:tab.panel>
+        {{-- AI Tab Panel --}}
+        <flux:tab.panel name="ai"></flux:tab.panel>
     </flux:tab.group>
 </div>

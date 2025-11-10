@@ -17,8 +17,6 @@ final class ViewApplication extends Component
 {
     public JobApplication $application;
 
-    public string $activeTab = 'details';
-
     public function mount(JobApplication $application): void
     {
         // Ensure the user owns the application
@@ -26,21 +24,21 @@ final class ViewApplication extends Component
             abort(403);
         }
 
-        $this->application = $application;
+        $this->application = $application->load('documents');
     }
 
     public function render(): View
     {
         return view('livewire.applications.view-application')
-            ->title(config('app.name').' | '.$this->application->job_title);
+            ->title(config('app.name') . ' | ' . $this->application->job_title);
     }
 
     public function downloadDocument(int $documentId): ?StreamedResponse
     {
         $document = $this->application
+            ->whereBelongsTo(Auth::user())
             ->documents()
             ->where('documents.id', $documentId)
-            ->whereBelongsTo(Auth::user())
             ->firstOrFail();
 
         if (!Storage::disk('local')->exists($document->file_path)) {

@@ -7,6 +7,7 @@ namespace App\Livewire\Application;
 use App\Livewire\Forms\JobApplicationForm;
 use App\Models\Document;
 use App\Models\JobApplication;
+use App\Enums\ApplicationStatus;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +48,7 @@ final class EditJobApplication extends Component
             variant: 'success',
         );
 
-        $this->redirect(route('applications.list'), navigate: true);
+        $this->redirect(route('applications.show', $this->application), navigate: true);
     }
 
     public function cancel(): void
@@ -62,5 +63,22 @@ final class EditJobApplication extends Component
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
+    }
+
+    public function updatedFormStatus(string $value): void
+    {
+        $today = now()->format('Y-m-d');
+
+        match ($value) {
+            ApplicationStatus::Screening->value => $this->form->screening_date ??= $today,
+            ApplicationStatus::Interview->value => $this->form->interview_date ??= $today,
+            ApplicationStatus::TechnicalTest->value => $this->form->technical_test_date ??= $today,
+            ApplicationStatus::FinalInterview->value => $this->form->final_interview_date ??= $today,
+            ApplicationStatus::Offer->value => $this->form->offer_date ??= $today,
+            ApplicationStatus::Accepted->value => $this->form->accepted_date ??= $today,
+            ApplicationStatus::Rejected->value => $this->form->rejected_date ??= $today,
+            ApplicationStatus::Withdrawn->value => $this->form->withdrawn_date ??= $today,
+            default => null,
+        };
     }
 }
