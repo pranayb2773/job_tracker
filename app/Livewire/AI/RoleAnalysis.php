@@ -39,6 +39,9 @@ final class RoleAnalysis extends Component
         $this->isAnalyzing = true;
 
         try {
+            // Increase PHP max execution time for this operation
+            set_time_limit(120);
+
             $result = $service->analyze($this->jobDescription, Auth::user());
             $this->analysis = $result->data;
 

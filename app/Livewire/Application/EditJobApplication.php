@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Application;
 
-use App\Enums\ApplicationPriority;
-use App\Enums\ApplicationStatus;
 use App\Livewire\Forms\JobApplicationForm;
 use App\Models\Document;
+use App\Models\JobApplication;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -15,24 +14,32 @@ use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-final class CreateJobApplication extends Component
+final class EditJobApplication extends Component
 {
     public JobApplicationForm $form;
 
-    public function mount(): void
+    public JobApplication $application;
+
+    public function mount(JobApplication $application): void
     {
-        $this->form->setDefaults();
+        // Authorization check - ensure user owns this application
+        if ($application->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $this->application = $application->load('documents');
+        $this->form->setApplication($this->application);
     }
 
     public function render(): View
     {
-        return view('livewire.application.create-job-application')
-            ->title(config('app.name') . ' | New Application');
+        return view('livewire.application.edit-job-application')
+            ->title(config('app.name') . ' | Edit Application');
     }
 
     public function save(): void
     {
-        $application = $this->form->store();
+        $this->form->update($this->application);
 
         Flux::toast(
             text: 'Application updated successfully.',

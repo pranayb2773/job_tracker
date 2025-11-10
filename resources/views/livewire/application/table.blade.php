@@ -89,6 +89,10 @@
                     </flux:table.cell>
 
                     <flux:table.cell>
+                        {{ $application->application_date->diffForHumans() }}
+                    </flux:table.cell>
+
+                    <flux:table.cell>
                         @foreach ($application->tags as $tag)
                             <flux:badge size="sm" color="zinc" variant="pill">
                                 {{ $tag }}
@@ -97,7 +101,13 @@
                     </flux:table.cell>
 
                     <flux:table.cell>
-                        {{ $application->application_date->diffForHumans() }}
+                        <flux:badge
+                            size="sm"
+                            :color="$application->priority->getColor()"
+                            variant="pill"
+                        >
+                            {{ $application->priority->getLabel() }}
+                        </flux:badge>
                     </flux:table.cell>
 
                     <flux:table.cell>
@@ -115,13 +125,20 @@
                             ></flux:button>
                             <flux:menu>
                                 <flux:menu.item
+                                    icon="pencil"
+                                    :href="route('applications.edit', $application)"
+                                    wire:navigate
+                                >
+                                    Edit
+                                </flux:menu.item>
+                                <flux:menu.item
                                     icon="cloud-arrow-down"
                                     wire:click="downloadDocument({{ $application->id }})"
                                 >
                                     Download
                                 </flux:menu.item>
                                 <flux:modal.trigger
-                                    name="{{ 'delete-document-' . $application->id }}"
+                                    name="{{ 'delete-application-' . $application->id }}"
                                 >
                                     <flux:menu.item
                                         icon="trash"
@@ -133,15 +150,19 @@
                             </flux:menu>
                         </flux:dropdown>
                         <x-confirmation-modal
-                            name="delete-document-{{ $application->id }}"
-                            heading="Delete Document?"
-                            click-event="deleteDocument({{ $application->id }})"
+                            name="delete-application-{{ $application->id }}"
+                            heading="Delete Application?"
+                            click-event="deleteApplication({{ $application->id }})"
                         >
                             <x-slot:subHeading>
                                 <p>
                                     You're about to delete
-                                    <b><i>{{ $application->title }}</i></b>
-                                    document.
+                                    <b><i>{{ $application->job_title }}</i></b>
+                                    at
+                                    <b>
+                                        <i>{{ $application->organisation }}</i>
+                                    </b>
+                                    .
                                 </p>
                                 <p>This action cannot be reversed.</p>
                             </x-slot>

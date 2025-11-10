@@ -35,11 +35,12 @@
                     :heading="__('Job Search')"
                     class="grid"
                     expandable
+                    :expanded="request()->routeIs(['applications.list', 'applications.create', 'applications.edit', 'documents.list', 'documents.analyze'])"
                 >
                     <flux:navlist.item
                         icon="rectangle-stack"
                         :href="route('applications.list')"
-                        :current="request()->routeIs('applications.list')"
+                        :current="request()->routeIs(['applications.list', 'applications.create', 'applications.edit'])"
                         wire:navigate
                     >
                         {{ __('Applications') }}
@@ -57,6 +58,7 @@
                     :heading="__('AI Tools')"
                     class="grid"
                     expandable
+                    :expanded="request()->routeIs(['role-analysis.show'])"
                 >
                     <flux:navlist.item
                         icon="sparkles"

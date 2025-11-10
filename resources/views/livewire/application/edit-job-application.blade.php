@@ -17,7 +17,7 @@
             {{ __('Applications') }}
         </flux:breadcrumbs.item>
         <flux:breadcrumbs.item>
-            {{ __('New Application') }}
+            {{ __('Edit Application') }}
         </flux:breadcrumbs.item>
     </flux:breadcrumbs>
 
@@ -25,10 +25,10 @@
     <div class="flex items-start justify-between">
         <div>
             <flux:heading size="xl">
-                {{ __('New Job Application') }}
+                {{ __('Edit Job Application') }}
             </flux:heading>
             <flux:text class="mt-1 text-zinc-600 dark:text-zinc-400">
-                {{ __('Track a new job opportunity by filling in the details below.') }}
+                {{ __('Update the details of your job application.') }}
             </flux:text>
         </div>
         <div class="flex items-start gap-3">
@@ -41,7 +41,7 @@
                 size="sm"
                 icon-trailing="check"
             >
-                {{ __('Create') }}
+                {{ __('Update') }}
             </flux:button>
         </div>
     </div>
@@ -252,9 +252,7 @@
                                     >
                                         {{ $document->title }}
                                     </div>
-                                    <div
-                                        class="text-xs text-zinc-500 dark:text-zinc-400"
-                                    >
+                                    <div class="text-xs text-zinc-500 dark:text-zinc-400">
                                         {{ $document->type->getLabel() }}
                                     </div>
                                 </div>

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\ApplicationPriority;
 use App\Enums\ApplicationStatus;
+use App\Enums\JobType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +19,8 @@ final class JobApplication extends Model
         'job_description',
         'job_url',
         'organisation',
+        'location',
+        'type',
         'source',
         'source_url',
         'work_arrangement',
@@ -68,6 +71,7 @@ final class JobApplication extends Model
             'tags' => 'array',
             'status' => ApplicationStatus::class,
             'priority' => ApplicationPriority::class,
+            'type' => JobType::class,
         ];
     }
 }

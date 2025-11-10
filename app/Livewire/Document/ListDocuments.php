@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Document;
 
+use App\Enums\DocumentType;
 use App\Models\Document;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
@@ -48,7 +49,7 @@ final class ListDocuments extends Component
     public string $title = '';
 
     #[Validate('required|string')]
-    public string $type = '';
+    public string $type = DocumentType::CurriculumVitae->value;
 
     #[Validate('required|file|max:1024|mimes:pdf')]
     public $file = null;
