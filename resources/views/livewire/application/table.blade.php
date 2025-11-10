@@ -125,17 +125,18 @@
                             ></flux:button>
                             <flux:menu>
                                 <flux:menu.item
+                                    icon="eye"
+                                    :href="route('applications.show', $application)"
+                                    wire:navigate
+                                >
+                                    View
+                                </flux:menu.item>
+                                <flux:menu.item
                                     icon="pencil"
                                     :href="route('applications.edit', $application)"
                                     wire:navigate
                                 >
                                     Edit
-                                </flux:menu.item>
-                                <flux:menu.item
-                                    icon="cloud-arrow-down"
-                                    wire:click="downloadDocument({{ $application->id }})"
-                                >
-                                    Download
                                 </flux:menu.item>
                                 <flux:modal.trigger
                                     name="{{ 'delete-application-' . $application->id }}"
