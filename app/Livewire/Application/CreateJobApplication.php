@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Application;
 
-use App\Enums\ApplicationPriority;
-use App\Enums\ApplicationStatus;
 use App\Livewire\Forms\JobApplicationForm;
 use App\Models\Document;
 use Flux\Flux;
