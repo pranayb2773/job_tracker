@@ -41,6 +41,9 @@ final class JobApplication extends Model
         'deadline',
         'notes',
         'tags',
+        'role_analysis',
+        'profile_matching',
+        'cover_letter',
     ];
 
     public function user(): BelongsTo
@@ -69,6 +72,9 @@ final class JobApplication extends Model
             'deadline' => 'date',
             'follow_up_date' => 'date',
             'tags' => 'array',
+            'role_analysis' => 'array',
+            'profile_matching' => 'array',
+            'cover_letter' => 'array',
             'status' => ApplicationStatus::class,
             'priority' => ApplicationPriority::class,
             'type' => JobType::class,

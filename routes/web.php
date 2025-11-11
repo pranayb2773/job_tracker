@@ -7,6 +7,7 @@ use App\Livewire\Application\CreateJobApplication;
 use App\Livewire\Application\EditJobApplication;
 use App\Livewire\Application\ListJobApplications;
 use App\Livewire\Applications\ViewApplication;
+use App\Livewire\Dashboard;
 use App\Livewire\Document\AnalyzeDocument;
 use App\Livewire\Document\ListDocuments;
 use Illuminate\Support\Facades\Route;
@@ -17,11 +18,8 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
 Route::middleware(['auth'])->group(function () {
+    Route::get('dashboard', Dashboard::class)->name('dashboard');
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');

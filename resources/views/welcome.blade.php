@@ -53,7 +53,7 @@
         </div>
 
         <!-- Hero Section -->
-        <div class="relative overflow-hidden bg-gradient-to-b from-white via-zinc-50/50 to-white dark:from-zinc-950 dark:via-zinc-900/50 dark:to-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+        <div class="relative overflow-hidden bg-gradient-to-b from-white via-zinc-50/50 to-white dark:from-zinc-950 dark:via-zinc-900/50 dark:to-zinc-950">
             <!-- Background decoration -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none">
                 <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-950 dark:to-purple-950 rounded-full blur-3xl opacity-30 animate-pulse"></div>
@@ -177,7 +177,7 @@
         </div>
 
         <!-- Stats Section -->
-        <div class="border-b bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900/50 dark:to-zinc-950">
+        <div class="bg-zinc-50 dark:bg-zinc-900/50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-5xl mx-auto">
                     <div class="text-center space-y-3 group">
@@ -205,7 +205,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Feature 1 -->
-                <flux:card class="hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-blue-500">
+                <flux:card class="hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-blue-500">
                     <div class="space-y-4">
                         <div class="size-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950 dark:to-blue-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <flux:icon.clipboard-document-list variant="outline" class="size-6 text-blue-600 dark:text-blue-400" />
@@ -220,7 +220,7 @@
                 </flux:card>
 
                 <!-- Feature 2 -->
-                <flux:card class="hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-purple-500">
+                <flux:card class="hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-purple-500">
                     <div class="space-y-4">
                         <div class="size-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 dark:from-purple-950 dark:to-purple-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <flux:icon.sparkles variant="outline" class="size-6 text-purple-600 dark:text-purple-400" />
@@ -235,7 +235,7 @@
                 </flux:card>
 
                 <!-- Feature 3 -->
-                <flux:card class="hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-green-500">
+                <flux:card class="hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-green-500">
                     <div class="space-y-4">
                         <div class="size-12 rounded-xl bg-gradient-to-br from-green-100 to-green-50 dark:from-green-950 dark:to-green-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <flux:icon.document-text variant="outline" class="size-6 text-green-600 dark:text-green-400" />
@@ -250,7 +250,7 @@
                 </flux:card>
 
                 <!-- Feature 4 -->
-                <flux:card class="hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-amber-500">
+                <flux:card class="hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-amber-500">
                     <div class="space-y-4">
                         <div class="size-12 rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-950 dark:to-amber-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <flux:icon.arrows-right-left variant="outline" class="size-6 text-amber-600 dark:text-amber-400" />
@@ -265,7 +265,7 @@
                 </flux:card>
 
                 <!-- Feature 5 -->
-                <flux:card class="hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-pink-500">
+                <flux:card class="hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-pink-500">
                     <div class="space-y-4">
                         <div class="size-12 rounded-xl bg-gradient-to-br from-pink-100 to-pink-50 dark:from-pink-950 dark:to-pink-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <flux:icon.magnifying-glass variant="outline" class="size-6 text-pink-600 dark:text-pink-400" />
@@ -280,7 +280,7 @@
                 </flux:card>
 
                 <!-- Feature 6 -->
-                <flux:card class="hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-transparent hover:border-t-indigo-500">
+                <flux:card class="hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 group border-t-2 border-t-indigo-500">
                     <div class="space-y-4">
                         <div class="size-12 rounded-xl bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-950 dark:to-indigo-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <flux:icon.moon variant="outline" class="size-6 text-indigo-600 dark:text-indigo-400" />
@@ -297,7 +297,7 @@
         </div>
 
         <!-- Workflow Section -->
-        <div class="border-y bg-white dark:bg-zinc-950">
+        <div class="bg-zinc-50 dark:bg-zinc-900/50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
                 <div class="text-center mb-16 space-y-3">
                     <flux:heading size="xl">Your Job Search Pipeline</flux:heading>
@@ -544,7 +544,7 @@
         </div>
 
         <!-- CTA Section -->
-        <div class="border-t bg-zinc-50 dark:bg-zinc-900/50">
+        <div class="bg-white dark:bg-zinc-950">
             <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 py-16">
                 <div class="space-y-6">
                     <div class="space-y-3">
@@ -563,7 +563,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="border-t bg-zinc-50 dark:bg-zinc-900/50">
+        <div class="bg-zinc-50 dark:bg-zinc-900/50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
                     <!-- Brand Section -->

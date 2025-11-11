@@ -1,0 +1,84 @@
+                <flux:table>
+                    <flux:table.row>
+                        <flux:table.heading>
+                            {{ __('Job Title') }}
+                        </flux:table.heading>
+                        <flux:table.heading>
+                            {{ __('Organisation') }}
+                        </flux:table.heading>
+                        <flux:table.heading>
+                            {{ __('Status') }}
+                        </flux:table.heading>
+                        <flux:table.heading>
+                            {{ __('Priority') }}
+                        </flux:table.heading>
+                        <flux:table.heading>
+                            {{ __('Last Updated') }}
+                        </flux:table.heading>
+                        <flux:table.heading></flux:table.heading>
+                    </flux:table.row>
+
+                    <flux:table.body>
+                        @foreach ($latestApplications as $application)
+                            <flux:table.row>
+                                <flux:table.cell
+                                    class="font-medium text-zinc-900 dark:text-zinc-100"
+                                >
+                                    {{ $application->job_title }}
+                                </flux:table.cell>
+
+                                <flux:table.cell>
+                                    {{ $application->organisation }}
+                                </flux:table.cell>
+
+                                <flux:table.cell>
+                                    <flux:badge
+                                        size="sm"
+                                        :color="$application->status->getColor()"
+                                        inset="top bottom"
+                                    >
+                                        {{ $application->status->getLabel() }}
+                                    </flux:badge>
+                                </flux:table.cell>
+
+                                <flux:table.cell>
+                                    @if ($application->priority)
+                                        <flux:badge
+                                            size="sm"
+                                            :color="$application->priority->getColor()"
+                                            inset="top bottom"
+                                        >
+                                            {{ $application->priority->getLabel() }}
+                                        </flux:badge>
+                                    @else
+                                        <span
+                                            class="text-sm text-zinc-500 dark:text-zinc-400"
+                                        >
+                                            -
+                                        </span>
+                                    @endif
+                                </flux:table.cell>
+
+                                <flux:table.cell>
+                                    <span
+                                        class="text-sm text-zinc-600 dark:text-zinc-400"
+                                    >
+                                        {{ $application->updated_at->diffForHumans() }}
+                                    </span>
+                                </flux:table.cell>
+
+                                <flux:table.cell>
+                                    <flux:button
+                                        href="{{ route('applications.show', $application) }}"
+                                        wire:navigate
+                                        variant="ghost"
+                                        size="sm"
+                                        icon="eye"
+                                    >
+                                        {{ __('View') }}
+                                    </flux:button>
+                                </flux:table.cell>
+                            </flux:table.row>
+                        @endforeach
+                    </flux:table.body>
+                </flux:table>

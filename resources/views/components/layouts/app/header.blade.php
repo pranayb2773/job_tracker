@@ -73,7 +73,14 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                        <div class="px-2 pb-2">
+                            <div class="text-xs mb-1 text-zinc-500 dark:text-zinc-400">{{ __('Appearance') }}</div>
+                            <flux:radio.group x-data variant="segmented" x-model="$flux.appearance">
+                                <flux:radio value="light" icon="sun">{{ __('Light') }}</flux:radio>
+                                <flux:radio value="dark" icon="moon">{{ __('Dark') }}</flux:radio>
+                                <flux:radio value="system" icon="computer-desktop">{{ __('System') }}</flux:radio>
+                            </flux:radio.group>
+                        </div>
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />
@@ -107,12 +114,8 @@
             <flux:spacer />
 
             <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
-
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                {{ __('Documentation') }}
+                <flux:navlist.item icon="cog" :href="route('profile.edit')" :current="request()->routeIs('profile.edit')" wire:navigate>
+                    {{ __('Settings') }}
                 </flux:navlist.item>
             </flux:navlist>
         </flux:sidebar>
