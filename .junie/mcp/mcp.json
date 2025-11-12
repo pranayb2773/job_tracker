@@ -1,9 +1,9 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "/Users/pranayb/Library/Application Support/Herd/bin/php83",
+            "command": "C:\\Users\\prana\\.config\\herd\\bin\\php84\\php.exe",
             "args": [
-                "/Users/pranayb/Herd/job_tracker/artisan",
+                "C:\\Users\\prana\\Herd\\job_tracker\\artisan",
                 "boost:mcp"
             ]
         }

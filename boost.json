@@ -1,11 +1,16 @@
 {
     "agents": [
         "claude_code",
+        "codex",
         "phpstorm"
     ],
     "editors": [
+        "claude_code",
         "phpstorm",
         "vscode"
     ],
-    "guidelines": []
+    "guidelines": [
+        "laravel/fortify",
+        "prism-php/prism"
+    ]
 }
