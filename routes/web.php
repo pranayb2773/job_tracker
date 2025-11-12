@@ -6,7 +6,7 @@ use App\Livewire\AI\RoleAnalysis;
 use App\Livewire\Application\CreateJobApplication;
 use App\Livewire\Application\EditJobApplication;
 use App\Livewire\Application\ListJobApplications;
-use App\Livewire\Applications\ViewApplication;
+use App\Livewire\Application\ViewApplication;
 use App\Livewire\Dashboard;
 use App\Livewire\Document\AnalyzeDocument;
 use App\Livewire\Document\ListDocuments;

@@ -1,15 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(vendor/bin/pint:*)",
-      "Bash(php artisan make:livewire:*)",
-      "Bash(composer show)",
-      "Bash(php artisan make:test:*)",
-      "Bash(php artisan test:*)",
-      "Bash(rm:*)",
-      "Bash(php vendor/bin/pint:*)",
-      "Bash(if not exist \"storage\\app\\temp\" mkdir \"storage\\app\\temp\")",
-      "Bash(storage/app/temp/.gitignore)"
+      "Bash(storage/app/temp/temp-view.blade.php)",
+      "Bash(cat:*)",
+      "Bash(npx prettier:*)"
     ],
     "deny": [],
     "ask": []

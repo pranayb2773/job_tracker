@@ -7,7 +7,9 @@ namespace App\Providers;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +32,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureModels();
         $this->configureVite();
         $this->configureMorphMaps();
+        $this->configureHttps();
     }
 
     /**
@@ -73,5 +76,23 @@ final class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'User' => User::class,
         ]);
+    }
+
+    private function configureHttps(): void
+    {
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+
+            // Trust Expose proxy headers
+            $this->app['request']->server->set('HTTPS', 'on');
+
+            // Set trusted proxies for Expose
+            Request::setTrustedProxies(['*'],
+                Request::HEADER_X_FORWARDED_FOR |
+                Request::HEADER_X_FORWARDED_HOST |
+                Request::HEADER_X_FORWARDED_PORT |
+                Request::HEADER_X_FORWARDED_PROTO
+            );
+        }
     }
 }

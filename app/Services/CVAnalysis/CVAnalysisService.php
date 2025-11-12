@@ -16,9 +16,7 @@ final readonly class CVAnalysisService
     public function __construct(
         private AIProviderInterface $provider,
         private AnalysisRateLimiter $rateLimiter
-    )
-    {
-    }
+    ) {}
 
     /**
      * Analyze a CV/Resume document using the configured AI provider.
@@ -35,7 +33,7 @@ final readonly class CVAnalysisService
         set_time_limit(300); // 5 minutes
 
         // Load system prompt
-        $systemPrompt = file_get_contents(resource_path('prompts/cv-analysis.md'));
+        $systemPrompt = view('prompts.cv-analysis')->render();
 
         // Get previous analysis if this is a regeneration
         $previousAnalysis = $document->analysis && $document->analyzed_at

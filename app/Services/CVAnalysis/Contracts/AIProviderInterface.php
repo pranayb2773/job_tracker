@@ -27,6 +27,17 @@ interface AIProviderInterface
     ): string;
 
     /**
+     * Perform profile matching analysis between a CV and job description.
+     */
+    public function analyzeProfileMatching(
+        Document $cvDocument,
+        string $jobDescription,
+        string $jobTitle,
+        string $organisation,
+        string $systemPrompt
+    ): AnalysisResult;
+
+    /**
      * Get the provider name.
      */
     public function name(): string;

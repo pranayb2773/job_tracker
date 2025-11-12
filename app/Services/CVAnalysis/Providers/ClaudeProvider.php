@@ -78,20 +78,20 @@ final class ClaudeProvider implements AIProviderInterface
         } catch (PrismRequestTooLargeException $e) {
             throw new Exception('The document is too large to analyze. Please try a smaller file.');
         } catch (PrismException $e) {
-            throw new Exception('An error occurred while communicating with the AI service: ' . $e->getMessage());
+            throw new Exception('An error occurred while communicating with the AI service: '.$e->getMessage());
         }
 
         // Clean the response - remove Markdown code fences if present
         $responseText = $response->text;
         $responseText = preg_replace('/^```json\s*/m', '', $responseText);
         $responseText = preg_replace('/\s*```$/m', '', $responseText);
-        $responseText = trim($responseText);
+        $responseText = mb_trim($responseText);
 
         // Check if response appears truncated (doesn't end with })
-        if (!preg_match('/\}[\s]*$/', $responseText)) {
+        if (! preg_match('/\}[\s]*$/', $responseText)) {
             logger('AI response appears truncated', [
-                'response_length' => strlen($responseText),
-                'response_end' => substr($responseText, -100),
+                'response_length' => mb_strlen($responseText),
+                'response_end' => mb_substr($responseText, -100),
             ]);
             throw new Exception('AI response was truncated. The analysis may be incomplete. Please try again.');
         }
@@ -106,11 +106,11 @@ final class ClaudeProvider implements AIProviderInterface
             logger('Failed to parse AI response', [
                 'error' => json_last_error_msg(),
                 'json_error_code' => json_last_error(),
-                'response_length' => strlen($responseText),
-                'response_start' => substr($responseText, 0, 200),
-                'response_end' => substr($responseText, -200),
+                'response_length' => mb_strlen($responseText),
+                'response_start' => mb_substr($responseText, 0, 200),
+                'response_end' => mb_substr($responseText, -200),
             ]);
-            throw new Exception('Failed to parse AI response: ' . json_last_error_msg());
+            throw new Exception('Failed to parse AI response: '.json_last_error_msg());
         }
 
         return new AnalysisResult(
@@ -161,20 +161,20 @@ final class ClaudeProvider implements AIProviderInterface
         } catch (PrismRequestTooLargeException $e) {
             throw new Exception('The text is too large to analyze. Please try a shorter description.');
         } catch (PrismException $e) {
-            throw new Exception('An error occurred while communicating with the AI service: ' . $e->getMessage());
+            throw new Exception('An error occurred while communicating with the AI service: '.$e->getMessage());
         }
 
         // Clean the response - remove Markdown code fences if present
         $responseText = $response->text;
         $responseText = preg_replace('/^```json\s*/m', '', $responseText);
         $responseText = preg_replace('/\s*```$/m', '', $responseText);
-        $responseText = trim($responseText);
+        $responseText = mb_trim($responseText);
 
         // Check if response appears truncated (doesn't end with })
-        if (!preg_match('/\}[\s]*$/', $responseText)) {
+        if (! preg_match('/\}[\s]*$/', $responseText)) {
             logger('AI text response appears truncated', [
-                'response_length' => strlen($responseText),
-                'response_end' => substr($responseText, -100),
+                'response_length' => mb_strlen($responseText),
+                'response_end' => mb_substr($responseText, -100),
             ]);
             throw new Exception('AI response was truncated. The analysis may be incomplete. Please try again.');
         }
@@ -186,13 +186,101 @@ final class ClaudeProvider implements AIProviderInterface
         return $responseText;
     }
 
+    public function analyzeProfileMatching(
+        Document $cvDocument,
+        string $jobDescription,
+        string $jobTitle,
+        string $organisation,
+        string $systemPrompt
+    ): AnalysisResult {
+        $filePath = Storage::disk('local')->path($cvDocument->file_path);
+
+        // Enable prompt caching for the CV document
+        $prismDocument = PrismDocument::fromLocalPath($filePath)
+            ->withProviderOptions(['cacheType' => AnthropicCacheType::Ephemeral]);
+
+        // Build the user prompt with job description context
+        $userPrompt = "JOB DESCRIPTION:\n{$jobDescription}\n\n";
+        $userPrompt .= "ROLE: {$jobTitle}\n";
+        $userPrompt .= "ORGANIZATION: {$organisation}\n\n";
+        $userPrompt .= 'Please analyze the CV document attached and compare it against the job description above. Provide a comprehensive profile matching analysis.';
+
+        $messages = [
+            new UserMessage($userPrompt, [$prismDocument]),
+        ];
+
+        try {
+            $response = Prism::text()
+                ->using(Provider::Anthropic, $this->model)
+                ->withSystemPrompt($systemPrompt)
+                ->withClientOptions([
+                    'timeout' => $this->timeout,
+                    'connect_timeout' => 60,
+                ])
+                ->withMessages($messages)
+                ->withMaxTokens(8000) // Increased for comprehensive profile matching
+                ->asText();
+        } catch (PrismRateLimitedException $e) {
+            throw new Exception('AI service rate limit exceeded. Please try again in a few moments.');
+        } catch (PrismProviderOverloadedException $e) {
+            throw new Exception('AI service is currently overloaded. Please try again later.');
+        } catch (PrismRequestTooLargeException $e) {
+            throw new Exception('The document or job description is too large to analyze. Please try shorter content.');
+        } catch (PrismException $e) {
+            throw new Exception('An error occurred while communicating with the AI service: '.$e->getMessage());
+        }
+
+        // Clean the response
+        $responseText = $response->text;
+        $responseText = preg_replace('/^```json\s*/m', '', $responseText);
+        $responseText = preg_replace('/\s*```$/m', '', $responseText);
+        $responseText = mb_trim($responseText);
+
+        // Check if response appears truncated
+        if (! preg_match('/\}[\s]*$/', $responseText)) {
+            logger('Profile matching response appears truncated', [
+                'response_length' => mb_strlen($responseText),
+                'response_end' => mb_substr($responseText, -100),
+            ]);
+            throw new Exception('AI response was truncated. The analysis may be incomplete. Please try again.');
+        }
+
+        // Sanitize control characters
+        $responseText = $this->sanitizeJsonString($responseText);
+
+        // Parse the JSON response
+        $analysisData = json_decode($responseText, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || $analysisData === null) {
+            logger('Failed to parse profile matching response', [
+                'error' => json_last_error_msg(),
+                'json_error_code' => json_last_error(),
+                'response_length' => mb_strlen($responseText),
+                'response_start' => mb_substr($responseText, 0, 200),
+                'response_end' => mb_substr($responseText, -200),
+            ]);
+            throw new Exception('Failed to parse AI response: '.json_last_error_msg());
+        }
+
+        return new AnalysisResult(
+            data: $analysisData,
+            promptTokens: $response->usage->promptTokens,
+            completionTokens: $response->usage->completionTokens,
+            cacheWriteTokens: $response->usage->cacheWriteInputTokens ?? 0,
+            cacheReadTokens: $response->usage->cacheReadInputTokens ?? 0,
+            cacheHit: ($response->usage->cacheReadInputTokens ?? 0) > 0,
+            provider: $this->name(),
+            model: $this->model,
+        );
+    }
+
     /**
      * Sanitize JSON string by removing or escaping problematic control characters.
      */
     private function sanitizeJsonString(string $json): string
     {
         // First, ensure UTF-8 encoding
-        if (!mb_check_encoding($json, 'UTF-8')) {
+        if (! mb_check_encoding($json, 'UTF-8')) {
             $json = mb_convert_encoding($json, 'UTF-8', 'UTF-8');
         }
 

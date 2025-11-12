@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Services\CVAnalysis\Contracts\AIProviderInterface;
 use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
 use App\Services\RoleAnalysis\DTOs\RoleAnalysisResult;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
@@ -37,7 +36,7 @@ final readonly class RoleAnalysisService
 
         try {
             // Load system prompt
-            $systemPrompt = File::get(resource_path('prompts/role-analysis.md'));
+            $systemPrompt = view('prompts.role-analysis')->render();
 
             Log::info('Role analysis starting', [
                 'prompt_length' => mb_strlen($systemPrompt),
