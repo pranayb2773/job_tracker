@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Application;
 
 use App\Models\JobApplication;
+use App\Models\JobApplicationDocument;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -110,5 +112,27 @@ final class ListJobApplications extends Component
             ->pluck('id')
             ->map(fn(int $id) => (string)$id)
             ->toArray();
+    }
+
+    public function deleteApplication(int $applicationId): void
+    {
+        $jobApplication = JobApplication::query()
+            ->where('id', $applicationId)
+            ->whereBelongsTo(Auth::user())
+            ->firstOrFail();
+
+        // Delete the associated documents
+        $jobApplication->documents()->delete();
+
+        // Delete the application
+        $jobApplication->delete();
+
+        $this->reset(['selectedApplicationIds', 'applicationIdsOnPage']);
+
+        Flux::toast(
+            text: "{$jobApplication->job_title} at application {$jobApplication->organisation} successfully deleted.",
+            heading: 'Application Deleted',
+            variant: 'success',
+        );
     }
 }
