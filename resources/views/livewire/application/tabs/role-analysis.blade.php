@@ -1,8 +1,10 @@
 <?php
 
+use App\Jobs\ProcessRoleAnalysis;
 use App\Services\RoleAnalysis\RoleAnalysisService;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -35,42 +37,59 @@ new class extends Component {
             return;
         }
 
+        // Check rate limit
+        try {
+            if ($service->hasReachedLimit(Auth::user())) {
+                $limit = config('ai.role_analysis.rate_limit.daily_limit', 20);
+                Flux::toast(
+                    text: "You have reached your daily limit of {$limit} role analyses. Please try again tomorrow.",
+                    heading: 'Limit Reached',
+                    variant: 'warning',
+                );
+                return;
+            }
+        } catch (\Throwable $e) {
+            Flux::toast(
+                text: $e->getMessage(),
+                heading: 'Rate Limit Error',
+                variant: 'warning',
+            );
+            return;
+        }
+
         $this->isAnalyzingRole = true;
 
-        try {
-            set_time_limit(120);
-            $result = $service->analyze($desc, Auth::user());
-            $this->roleAnalysis = $result->data;
+        // Dispatch job to process in background
+        ProcessRoleAnalysis::dispatch($this->application, $desc);
 
-            // Persist to application JSON column
-            $this->application->role_analysis = $this->roleAnalysis;
-            $this->application->save();
+        $this->remainingAnalyses = $service->getRemainingAnalyses(Auth::user());
 
-            $this->remainingAnalyses = $service->getRemainingAnalyses(Auth::user());
+        Flux::toast(
+            text: 'Role analysis started. This may take 2-3 minutes. The page will update automatically when complete.',
+            heading: 'Processing...',
+            variant: 'info',
+        );
+    }
 
+    #[On('refresh-analysis')]
+    public function refreshAnalysis(): void
+    {
+        $this->application->refresh();
+        $this->roleAnalysis = $this->application->role_analysis ?? null;
+
+        // Stop processing indicator if analysis is complete
+        if ($this->roleAnalysis && $this->isAnalyzingRole) {
+            $this->isAnalyzingRole = false;
             Flux::toast(
                 text: 'Role analysis completed successfully.',
                 heading: 'Analysis Complete',
                 variant: 'success',
             );
-        } catch (\Throwable $e) {
-            Flux::toast(
-                text: 'An error occurred while analyzing the role. Please try again.',
-                heading: 'Analysis Failed',
-                variant: 'danger',
-            );
-            logger()->error('Role analysis failed', [
-                'user_id' => Auth::id(),
-                'application_id' => $this->application->id,
-                'error' => $e->getMessage(),
-            ]);
-        } finally {
-            $this->isAnalyzingRole = false;
         }
     }
 } ?>
 
-<div class="space-y-6">
+<div class="space-y-6" @if($isAnalyzingRole) wire:poll.5s="refreshAnalysis" @endif>
     @if (empty($application->job_description))
         <flux:heading size="lg">
             {{ __('Role Analysis') }}

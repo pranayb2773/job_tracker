@@ -1,15 +1,17 @@
 <?php
 
 use App\Enums\DocumentType;
-use App\Services\AI\Contracts\AIProviderInterface;
+use App\Jobs\ProcessProfileMatching;
 use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 
 new class extends Component {
     public App\Models\JobApplication $application;
     public ?array $profileMatching = null;
+    public bool $isGenerating = false;
 
     // Chart data
     public array $data = [];
@@ -23,7 +25,7 @@ new class extends Component {
         $this->computeKeywordChartData();
     }
 
-    public function generateProfileMatching(AIProviderInterface $provider): void
+    public function generateProfileMatching(): void
     {
         $descHtml = (string)($this->application->job_description ?? '');
         $desc = mb_trim(strip_tags($descHtml));
@@ -52,38 +54,31 @@ new class extends Component {
             $systemPrompt = 'Analyze the job description and CV to provide a comprehensive profile matching analysis with scores, strengths, gaps, keyword analysis, skills analysis, experience match, education match, and actionable suggestions.';
         }
 
-        try {
-            set_time_limit(180);
-            $result = $provider->analyzeProfileMatching(
-                cvDocument: $cv,
-                jobDescription: $desc,
-                jobTitle: $this->application->job_title ?? 'Not specified',
-                organisation: $this->application->organisation ?? 'Not specified',
-                systemPrompt: $systemPrompt
-            );
+        $this->isGenerating = true;
 
-            $decoded = $result->data;
-            if (!is_array($decoded)) {
-                throw new RuntimeException('Profile matching: invalid response format');
-            }
+        // Dispatch job to process in background
+        ProcessProfileMatching::dispatch($this->application, $cv, $desc, $systemPrompt);
 
-            $this->profileMatching = $decoded;
-            $this->application->profile_matching = $decoded;
-            $this->application->save();
+        $limiter->hit(Auth::user(), 'role_analysis');
 
-            $limiter->hit(Auth::user(), 'role_analysis');
+        Flux::toast(
+            text: 'Profile matching started. This may take 2-3 minutes. The page will update automatically when complete.',
+            heading: 'Processing...',
+            variant: 'info'
+        );
+    }
 
+    #[On('refresh-profile')]
+    public function refreshProfile(): void
+    {
+        $this->application->refresh();
+        $this->profileMatching = $this->application->profile_matching ?? null;
+
+        // Stop processing indicator if complete
+        if ($this->profileMatching && $this->isGenerating) {
+            $this->isGenerating = false;
             $this->computeKeywordChartData();
-
-            Flux::toast(text: 'Profile matching generated successfully.', heading: 'Done', variant: 'success');
-        } catch (\Throwable $e) {
-            Flux::toast(text: $e->getMessage(), heading: 'Generation Failed', variant: 'danger');
-            logger()->error('Profile matching generation failed', [
-                'user_id' => Auth::id(),
-                'application_id' => $this->application->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Flux::toast(text: 'Profile matching completed successfully.', heading: 'Done', variant: 'success');
         }
     }
 
@@ -133,7 +128,7 @@ new class extends Component {
     }
 } ?>
 
-<div class="space-y-6">
+<div class="space-y-6" @if($isGenerating) wire:poll.5s="refreshProfile" @endif>
     <div class="flex items-center justify-between">
         <flux:heading size="lg">
             {{ __('Profile Matching') }}
