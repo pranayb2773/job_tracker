@@ -6,8 +6,8 @@ namespace App\Services\RoleAnalysis;
 
 use App\Exceptions\AnalysisRateLimitException;
 use App\Models\User;
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
+use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use App\Services\RoleAnalysis\DTOs\RoleAnalysisResult;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;

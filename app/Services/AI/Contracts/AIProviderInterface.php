@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\CVAnalysis\Contracts;
+namespace App\Services\AI\Contracts;
 
 use App\Models\Document;
 use App\Services\CVAnalysis\DTOs\AnalysisResult;

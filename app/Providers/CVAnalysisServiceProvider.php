@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
+use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\Providers\ClaudeProvider;
+use App\Services\AI\Providers\GeminiProvider;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use App\Services\CVAnalysis\CVAnalysisService;
-use App\Services\CVAnalysis\Providers\ClaudeProvider;
-use App\Services\CVAnalysis\Providers\GeminiProvider;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
 use App\Services\RoleAnalysis\RoleAnalysisService;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;

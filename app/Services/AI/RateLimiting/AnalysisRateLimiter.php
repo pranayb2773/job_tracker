@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\CVAnalysis\RateLimiting;
+namespace App\Services\AI\RateLimiting;
 
 use App\Exceptions\AnalysisRateLimitException;
 use App\Models\User;

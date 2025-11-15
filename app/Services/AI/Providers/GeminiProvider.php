@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services\CVAnalysis\Providers;
+namespace App\Services\AI\Providers;
 
 use App\Models\Document;
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
+use App\Services\AI\Contracts\AIProviderInterface;
 use App\Services\CVAnalysis\DTOs\AnalysisResult;
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Exceptions\PrismException;
 use Prism\Prism\Exceptions\PrismProviderOverloadedException;
