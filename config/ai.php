@@ -37,7 +37,8 @@ return [
             ],
             'claude' => [
                 'model' => env('CLAUDE_MODEL', 'claude-sonnet-4-5-20250929'),
-                'timeout' => (int)env('AI_TIMEOUT', 180),
+                // Claude Sonnet 4.5 is slower than Gemini - needs higher timeout to prevent 504 errors
+                'timeout' => (int)env('CLAUDE_TIMEOUT', env('AI_TIMEOUT', 300)),
                 'max_tokens' => (int)env('AI_MAX_TOKENS', 4000),
             ],
             'openai' => [

@@ -24,7 +24,7 @@ final class ClaudeProvider implements AIProviderInterface
 {
     public function __construct(
         private readonly string $model = 'claude-sonnet-4-5-20250929',
-        private readonly int $timeout = 180,
+        private readonly int $timeout = 300,
         private readonly int $maxTokens = 4000,
     ) {}
 
