@@ -58,6 +58,7 @@ new class extends Component {
         }
 
         $this->isAnalyzingRole = true;
+        $this->roleAnalysis = null; // Clear old data to prevent false success message
 
         // Dispatch job to process in background
         ProcessRoleAnalysis::dispatch($this->application, $desc);
@@ -74,17 +75,21 @@ new class extends Component {
     #[On('refresh-analysis')]
     public function refreshAnalysis(): void
     {
-        $this->application->refresh();
-        $this->roleAnalysis = $this->application->role_analysis ?? null;
+        // Refresh the application model from database
+        $this->application = $this->application->fresh();
+        $newData = $this->application->role_analysis ?? null;
 
-        // Stop processing indicator if analysis is complete
-        if ($this->roleAnalysis && $this->isAnalyzingRole) {
+        // Only show success if we actually got NEW data (wasn't null before)
+        if ($newData && !$this->roleAnalysis && $this->isAnalyzingRole) {
             $this->isAnalyzingRole = false;
+            $this->roleAnalysis = $newData;
             Flux::toast(
                 text: 'Role analysis completed successfully.',
                 heading: 'Analysis Complete',
                 variant: 'success',
             );
+        } else {
+            $this->roleAnalysis = $newData;
         }
     }
 } ?>

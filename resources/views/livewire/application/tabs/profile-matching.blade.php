@@ -55,6 +55,7 @@ new class extends Component {
         }
 
         $this->isGenerating = true;
+        $this->profileMatching = null; // Clear old data to prevent false success message
 
         // Dispatch job to process in background
         ProcessProfileMatching::dispatch($this->application, $cv, $desc, $systemPrompt);
@@ -71,14 +72,19 @@ new class extends Component {
     #[On('refresh-profile')]
     public function refreshProfile(): void
     {
-        $this->application->refresh();
-        $this->profileMatching = $this->application->profile_matching ?? null;
+        // Refresh the application model from database
+        $this->application = $this->application->fresh();
+        $newData = $this->application->profile_matching ?? null;
 
-        // Stop processing indicator if complete
-        if ($this->profileMatching && $this->isGenerating) {
+        // Only show success if we actually got NEW data (wasn't null before)
+        if ($newData && !$this->profileMatching && $this->isGenerating) {
             $this->isGenerating = false;
+            $this->profileMatching = $newData;
             $this->computeKeywordChartData();
             Flux::toast(text: 'Profile matching completed successfully.', heading: 'Done', variant: 'success');
+        } else {
+            $this->profileMatching = $newData;
+            $this->computeKeywordChartData();
         }
     }
 
