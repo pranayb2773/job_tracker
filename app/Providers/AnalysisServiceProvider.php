@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
+use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\Providers\ClaudeProvider;
+use App\Services\AI\Providers\GeminiProvider;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use App\Services\CVAnalysis\CVAnalysisService;
-use App\Services\CVAnalysis\Providers\ClaudeProvider;
-use App\Services\CVAnalysis\Providers\GeminiProvider;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
 use App\Services\RoleAnalysis\RoleAnalysisService;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 
-final class CVAnalysisServiceProvider extends ServiceProvider
+final class AnalysisServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -23,7 +23,7 @@ final class CVAnalysisServiceProvider extends ServiceProvider
         // Bind the AI provider based on configuration
         $this->app->bind(AIProviderInterface::class, function ($app) {
             $provider = config('ai.cv_analysis.default_provider');
-            $providerConfig = config("ai.cv_analysis.providers.{$provider}");
+            $providerConfig = config("ai.providers.{$provider}");
 
             if (! $providerConfig) {
                 throw new InvalidArgumentException("Invalid CV analysis provider: {$provider}");
@@ -67,7 +67,7 @@ final class CVAnalysisServiceProvider extends ServiceProvider
         $this->app->singleton(RoleAnalysisService::class, function ($app) {
             // Get role analysis provider configuration
             $provider = config('ai.role_analysis.default_provider', config('ai.cv_analysis.default_provider'));
-            $baseProviderConfig = config("ai.cv_analysis.providers.{$provider}");
+            $baseProviderConfig = config("ai.providers.{$provider}");
 
             if (! $baseProviderConfig) {
                 throw new InvalidArgumentException("Invalid role analysis provider: {$provider}");

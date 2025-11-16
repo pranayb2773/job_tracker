@@ -54,6 +54,11 @@ final class AnalyzeDocument extends Component
                 'analyzed_at' => now(),
             ]);
 
+            logger()->debug('AnalyzeDocument stored CV analysis', [
+                'document_id' => $this->document->id,
+                'has_analysis' => $this->document->analysis !== null,
+            ]);
+
             // Get remaining analyses for user feedback
             $remaining = $cvAnalysisService->getRemainingAnalyses(Auth::user());
 
@@ -70,14 +75,17 @@ final class AnalyzeDocument extends Component
             ]);
 
             Flux::toast(
-                text: $e->getMessage() . ' (' . $e->getRemainingTime() . ' remaining)',
+                text: $e->getMessage().' ('.$e->getRemainingTime().' remaining)',
                 heading: 'Daily Limit Reached',
                 variant: 'warning',
             );
         } catch (Exception $e) {
-            logger($e->getMessage());
+            logger()->error('AnalyzeDocument CV analysis failed', [
+                'document_id' => $this->document->id,
+                'error' => $e->getMessage(),
+            ]);
             Flux::toast(
-                text: 'An error occurred during analysis: ' . $e->getMessage(),
+                text: 'An error occurred during analysis: '.$e->getMessage(),
                 heading: 'Analysis Failed',
                 variant: 'danger',
             );
@@ -88,14 +96,14 @@ final class AnalyzeDocument extends Component
 
     public function downloadPDF(): StreamedResponse
     {
-        if (!$this->analysis) {
+        if (! $this->analysis) {
             Flux::toast(
                 text: 'No analysis available to download.',
                 heading: 'Download Failed',
                 variant: 'danger',
             );
 
-            return response()->streamDownload(fn() => '', '');
+            return response()->streamDownload(fn () => '', '');
         }
 
         $html = view('pdf.cv-analysis', [
@@ -109,7 +117,7 @@ final class AnalyzeDocument extends Component
             ->toString();
 
         // Generate PDF to temporary file
-        $tempPath = storage_path('app/temp/' . uniqid('pdf_') . '.pdf');
+        $tempPath = storage_path('app/temp/'.uniqid('pdf_').'.pdf');
 
         Pdf::html($html)
             ->format('A4')
@@ -129,6 +137,6 @@ final class AnalyzeDocument extends Component
     public function render(): View
     {
         return view('livewire.document.analyze-document')
-            ->title(config('app.name') . ' | Analyze ' . $this->document->title);
+            ->title(config('app.name').' | Analyze '.$this->document->title);
     }
 }

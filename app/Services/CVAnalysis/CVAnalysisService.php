@@ -6,9 +6,9 @@ namespace App\Services\CVAnalysis;
 
 use App\Exceptions\AnalysisRateLimitException;
 use App\Models\Document;
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
+use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use App\Services\CVAnalysis\DTOs\AnalysisResult;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
 use Exception;
 
 final readonly class CVAnalysisService

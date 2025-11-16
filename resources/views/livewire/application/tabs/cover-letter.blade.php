@@ -1,8 +1,8 @@
 <?php
 
 use App\Enums\DocumentType;
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
+use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -51,20 +51,76 @@ new class extends Component {
             set_time_limit(120);
             $response = $provider->analyzeText($input, $systemPrompt);
             $payload = null;
+
             $decoded = json_decode($response, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                if (is_array($decoded)) {
-                    $this->coverLetter = isset($decoded['content']) ? mb_trim((string)$decoded['content']) : mb_trim($response);
-                    $payload = $decoded;
-                    $payload['generated_at'] = now()->toIso8601String();
-                } elseif (is_string($decoded)) {
-                    $this->coverLetter = mb_trim($decoded);
-                    $payload = ['content' => $this->coverLetter, 'generated_at' => now()->toIso8601String(),];
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded['content']) && is_string($decoded['content'])) {
+                $this->coverLetter = mb_trim($decoded['content']);
+
+                $payload = [
+                    'content' => $this->coverLetter,
+                    'data' => $decoded,
+                    'generated_at' => now()->toIso8601String(),
+                ];
+            } else {
+                $decoded = json_decode($response, true);
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    if (is_array($decoded)) {
+                        $content = $decoded['content'] ?? ($decoded['cover_letter'] ?? null);
+
+                        if (is_array($content)) {
+                            $content = implode("\n\n", array_filter(array_map('strval', $content)));
+                        }
+
+                        if (! is_string($content) || mb_trim($content) === '') {
+                            $strings = [];
+                            $walker = function ($value) use (&$strings, &$walker): void {
+                                if (is_string($value)) {
+                                    $strings[] = $value;
+
+                                    return;
+                                }
+
+                                if (is_array($value)) {
+                                    foreach ($value as $inner) {
+                                        $walker($inner);
+                                    }
+                                }
+                            };
+
+                            $walker($decoded);
+
+                            $content = implode("\n\n", array_filter(array_map('strval', $strings)));
+                        }
+
+                        $this->coverLetter = mb_trim((string) $content);
+
+                        if ($this->coverLetter === '') {
+                            $this->coverLetter = mb_trim($response);
+                        }
+
+                        $payload = [
+                            'content' => $this->coverLetter,
+                            'data' => $decoded,
+                            'generated_at' => now()->toIso8601String(),
+                        ];
+                    } elseif (is_string($decoded)) {
+                        $this->coverLetter = mb_trim($decoded);
+                        $payload = [
+                            'content' => $this->coverLetter,
+                            'generated_at' => now()->toIso8601String(),
+                        ];
+                    }
                 }
             }
+
             if ($payload === null) {
                 $this->coverLetter = mb_trim($response);
-                $payload = ['content' => $this->coverLetter, 'generated_at' => now()->toIso8601String(),];
+                $payload = [
+                    'content' => $this->coverLetter,
+                    'generated_at' => now()->toIso8601String(),
+                ];
             }
             $this->application->cover_letter = $payload;
             $this->application->save();
@@ -95,15 +151,15 @@ new class extends Component {
 } ?>
 
 <div class="space-y-6">
-    @if ($coverLetter && $application->documents->isNotEmpty())
-        <div class="flex items-center justify-between">
-            <flux:heading size="lg">
-                {{ __('Cover Letter Inspiration') }}
-            </flux:heading>
-            <div
-                class="flex items-center gap-2"
-                x-data="{ cover: @entangle('coverLetter') }"
-            >
+    <div class="flex items-center justify-between">
+        <flux:heading size="lg">
+            {{ __('Cover Letter Inspiration') }}
+        </flux:heading>
+        <div
+            class="flex items-center gap-2"
+            x-data="{ cover: @entangle('coverLetter') }"
+        >
+            @if ($coverLetter)
                 <flux:button
                     variant="outline"
                     size="sm"
@@ -121,24 +177,23 @@ new class extends Component {
                 >
                     {{ __('Download') }}
                 </flux:button>
-                <flux:button
-                    variant="primary"
-                    icon="sparkles"
-                    wire:click="generateCoverLetter"
-                    size="sm"
-                >
-                    @if ($coverLetter)
-                        {{ __('Regenerate') }}
-                    @else
-                        {{ __('Generate') }}
-                    @endif
-                </flux:button>
-            </div>
+            @endif
+            <flux:button
+                variant="primary"
+                icon="sparkles"
+                wire:click="generateCoverLetter"
+                size="sm"
+            >
+                @if ($coverLetter)
+                    {{ __('Regenerate') }}
+                @else
+                    {{ __('Generate') }}
+                @endif
+            </flux:button>
         </div>
-    @else
-        <flux:heading size="lg">
-            {{ __('Cover Letter Inspiration') }}
-        </flux:heading>
+    </div>
+
+    @if (! $coverLetter)
         <div
             class="space-y-6 rounded-lg bg-zinc-100 px-6 text-sm text-center dark:bg-zinc-900 py-16"
         >
@@ -164,4 +219,3 @@ new class extends Component {
         </flux:card>
     @endif
 </div>
-

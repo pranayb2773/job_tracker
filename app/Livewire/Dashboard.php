@@ -8,7 +8,7 @@ use App\Enums\ApplicationStatus;
 use App\Enums\DocumentType;
 use App\Models\Document;
 use App\Models\JobApplication;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

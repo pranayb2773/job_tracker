@@ -1,8 +1,8 @@
 <?php
 
 use App\Enums\DocumentType;
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
+use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
@@ -812,4 +812,3 @@ new class extends Component {
         </flux:card>
     @endif
 </div>
-

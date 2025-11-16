@@ -6,8 +6,8 @@ namespace App\Services\RoleAnalysis;
 
 use App\Exceptions\AnalysisRateLimitException;
 use App\Models\User;
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
-use App\Services\CVAnalysis\RateLimiting\AnalysisRateLimiter;
+use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use App\Services\RoleAnalysis\DTOs\RoleAnalysisResult;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -26,7 +26,7 @@ final readonly class RoleAnalysisService
     {
         // Check rate limit for role analysis
         if (! $this->rateLimiter->attempt($user, 'role_analysis')) {
-            $limit = config('ai.role_analysis_daily_limit', 20);
+            $limit = config('ai.role_analysis.rate_limit.daily_limit', 20);
             $resetsAt = $this->rateLimiter->availableAt($user, 'role_analysis');
 
             throw new AnalysisRateLimitException(

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\CVAnalysis\RateLimiting;
+namespace App\Services\AI\RateLimiting;
 
 use App\Exceptions\AnalysisRateLimitException;
 use App\Models\User;
@@ -13,9 +13,7 @@ final readonly class AnalysisRateLimiter
     public function __construct(
         private int $dailyLimit = 10,
         private int $roleAnalysisDailyLimit = 20
-    )
-    {
-    }
+    ) {}
 
     /**
      * Check if the user can perform an analysis.
@@ -122,6 +120,6 @@ final readonly class AnalysisRateLimiter
         $now = now();
         $midnight = $now->copy()->addDay()->startOfDay();
 
-        return (int)$now->diffInSeconds($midnight, false);
+        return (int) $now->diffInSeconds($midnight, false);
     }
 }

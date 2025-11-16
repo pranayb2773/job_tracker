@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Services\CVAnalysis\Providers;
+namespace App\Services\AI\Providers;
 
 use App\Models\Document;
-use App\Services\CVAnalysis\Contracts\AIProviderInterface;
+use App\Services\AI\Contracts\AIProviderInterface;
 use App\Services\CVAnalysis\DTOs\AnalysisResult;
 use Exception;
 use Illuminate\Support\Facades\Storage;
@@ -15,14 +15,15 @@ use Prism\Prism\Exceptions\PrismProviderOverloadedException;
 use Prism\Prism\Exceptions\PrismRateLimitedException;
 use Prism\Prism\Exceptions\PrismRequestTooLargeException;
 use Prism\Prism\Prism;
+use Prism\Prism\Providers\Anthropic\Enums\AnthropicCacheType;
 use Prism\Prism\ValueObjects\Media\Document as PrismDocument;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 use Prism\Prism\ValueObjects\Messages\UserMessage;
 
-final readonly class GeminiProvider implements AIProviderInterface
+final readonly class ClaudeProvider implements AIProviderInterface
 {
     public function __construct(
-        private string $model = 'gemini-2.5-flash',
+        private string $model = 'claude-sonnet-4-5-20250929',
         private int $timeout = 180,
         private int $maxTokens = 4000,
     ) {}
@@ -34,7 +35,7 @@ final readonly class GeminiProvider implements AIProviderInterface
     ): AnalysisResult {
         $filePath = Storage::disk('local')->path($document->file_path);
 
-        // Create document for analysis (Gemini has automatic implicit caching)
+        // Enable prompt caching for cost reduction (78-90% savings on repeated analyses)
         $prismDocument = PrismDocument::fromLocalPath($filePath);
 
         // Build message chain
@@ -60,7 +61,7 @@ final readonly class GeminiProvider implements AIProviderInterface
 
         try {
             $response = Prism::text()
-                ->using(Provider::Gemini, $this->model)
+                ->using(Provider::Anthropic, $this->model)
                 ->withSystemPrompt($systemPrompt)
                 ->withClientOptions([
                     'timeout' => $this->timeout,
@@ -125,7 +126,7 @@ final readonly class GeminiProvider implements AIProviderInterface
 
     public function name(): string
     {
-        return 'gemini';
+        return 'claude';
     }
 
     public function model(): string
@@ -143,7 +144,7 @@ final readonly class GeminiProvider implements AIProviderInterface
 
         try {
             $response = Prism::text()
-                ->using(Provider::Gemini, $this->model)
+                ->using(Provider::Anthropic, $this->model)
                 ->withSystemPrompt($systemPrompt)
                 ->withClientOptions([
                     'timeout' => $this->timeout,
@@ -193,8 +194,9 @@ final readonly class GeminiProvider implements AIProviderInterface
     ): AnalysisResult {
         $filePath = Storage::disk('local')->path($cvDocument->file_path);
 
-        // Create document for analysis (Gemini has automatic implicit caching)
-        $prismDocument = PrismDocument::fromLocalPath($filePath);
+        // Enable prompt caching for the CV document
+        $prismDocument = PrismDocument::fromLocalPath($filePath)
+            ->withProviderOptions(['cacheType' => AnthropicCacheType::Ephemeral]);
 
         // Build the user prompt with job description context
         $userPrompt = "JOB DESCRIPTION:\n{$jobDescription}\n\n";
@@ -208,14 +210,11 @@ final readonly class GeminiProvider implements AIProviderInterface
 
         try {
             $response = Prism::text()
-                ->using(Provider::Gemini, $this->model)
+                ->using(Provider::Anthropic, $this->model)
                 ->withSystemPrompt($systemPrompt)
                 ->withClientOptions([
                     'timeout' => $this->timeout,
                     'connect_timeout' => 60,
-                ])
-                ->withProviderOptions([
-                    'responseMimeType' => 'application/json',
                 ])
                 ->withMessages($messages)
                 ->withMaxTokens(8000) // Increased for comprehensive profile matching
@@ -236,38 +235,13 @@ final readonly class GeminiProvider implements AIProviderInterface
         $responseText = preg_replace('/\s*```$/m', '', $responseText);
         $responseText = mb_trim($responseText);
 
-        // Check if response appears truncated; if so, attempt a compact fallback
+        // Check if response appears truncated
         if (! preg_match('/\}[\s]*$/', $responseText)) {
             logger('Profile matching response appears truncated', [
                 'response_length' => mb_strlen($responseText),
                 'response_end' => mb_substr($responseText, -100),
             ]);
-
-            // Fallback attempt: request a more compact JSON, smaller token budget, no responseMimeType constraint
-            try {
-                $compactSystemPrompt = $systemPrompt.'\n\nReturn strictly valid JSON only. Keep text concise and arrays to max 10 items.';
-
-                $fallback = Prism::text()
-                    ->using(Provider::Gemini, $this->model)
-                    ->withSystemPrompt($compactSystemPrompt)
-                    ->withClientOptions([
-                        'timeout' => $this->timeout,
-                        'connect_timeout' => 60,
-                    ])
-                    ->withMessages($messages)
-                    ->withMaxTokens(4000)
-                    ->asText();
-
-                $responseText = mb_trim($fallback->text ?? '');
-                $responseText = preg_replace('/^```json\s*/m', '', $responseText);
-                $responseText = preg_replace('/\s*```$/m', '', $responseText);
-
-                if (! preg_match('/\}[\s]*$/', $responseText)) {
-                    throw new Exception('AI response was truncated after fallback.');
-                }
-            } catch (Throwable $fallbackError) {
-                throw new Exception('AI response was truncated. The analysis may be incomplete. Please try again.');
-            }
+            throw new Exception('AI response was truncated. The analysis may be incomplete. Please try again.');
         }
 
         // Sanitize control characters
