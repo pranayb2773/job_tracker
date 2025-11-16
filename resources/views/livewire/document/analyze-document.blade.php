@@ -1,4 +1,4 @@
-<div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
+<div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl" @if($isAnalyzing) wire:poll.5s="refreshAnalysis" @endif>
     {{-- Breadcrumbs --}}
     <flux:breadcrumbs>
         <flux:breadcrumbs.item href="{{ route('dashboard') }}">

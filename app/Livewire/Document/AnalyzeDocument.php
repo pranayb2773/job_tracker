@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Livewire\Document;
 
 use App\Exceptions\AnalysisRateLimitException;
+use App\Jobs\ProcessCVAnalysis;
 use App\Models\Document;
 use App\Services\CVAnalysis\CVAnalysisService;
 use Exception;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
@@ -41,48 +43,62 @@ final class AnalyzeDocument extends Component
 
     public function analyzeCV(CVAnalysisService $cvAnalysisService): void
     {
-        $this->isAnalyzing = true;
-
         try {
-            // Analyze CV using the configured AI provider (via service)
-            $result = $cvAnalysisService->analyze($this->document);
-
-            // Store analysis in database
-            $this->analysis = $result->data;
-            $this->document->update([
-                'analysis' => $result->data,
-                'analyzed_at' => now(),
-            ]);
-
-            // Get remaining analyses for user feedback
-            $remaining = $cvAnalysisService->getRemainingAnalyses(Auth::user());
-
-            Flux::toast(
-                text: "CV analysis completed successfully using {$result->provider}. You have {$remaining} analyses remaining today.",
-                heading: 'Analysis Complete',
-                variant: 'success',
-            );
+            // Check rate limit before dispatching job
+            if ($cvAnalysisService->hasReachedLimit(Auth::user())) {
+                $limit = config('ai.cv_analysis.rate_limit.daily_limit', 10);
+                Flux::toast(
+                    text: "You have reached your daily limit of {$limit} CV analyses. Please try again tomorrow.",
+                    heading: 'Daily Limit Reached',
+                    variant: 'warning',
+                );
+                return;
+            }
         } catch (AnalysisRateLimitException $e) {
-            logger('Rate limit exceeded', [
-                'user_id' => Auth::id(),
-                'limit' => $e->limit,
-                'remaining' => $e->remaining,
-            ]);
-
             Flux::toast(
                 text: $e->getMessage() . ' (' . $e->getRemainingTime() . ' remaining)',
                 heading: 'Daily Limit Reached',
                 variant: 'warning',
             );
-        } catch (Exception $e) {
-            logger($e->getMessage());
-            Flux::toast(
-                text: 'An error occurred during analysis: ' . $e->getMessage(),
-                heading: 'Analysis Failed',
-                variant: 'danger',
-            );
-        } finally {
+            return;
+        }
+
+        $this->isAnalyzing = true;
+        $this->analysis = null; // Clear old data to prevent false success message
+
+        // Dispatch job to process in background
+        ProcessCVAnalysis::dispatch($this->document);
+
+        Flux::toast(
+            text: 'CV analysis started. This may take 2-3 minutes. The page will update automatically when complete.',
+            heading: 'Processing...',
+            variant: 'info',
+        );
+    }
+
+    #[On('refresh-cv-analysis')]
+    public function refreshAnalysis(): void
+    {
+        // Refresh the document model from database
+        $this->document = $this->document->fresh();
+        $newData = $this->document->analysis ?? null;
+
+        // Only show success if we actually got NEW data (wasn't null before)
+        if ($newData && !$this->analysis && $this->isAnalyzing) {
             $this->isAnalyzing = false;
+            $this->analysis = $newData;
+
+            // Get remaining analyses for user feedback
+            $cvAnalysisService = app(CVAnalysisService::class);
+            $remaining = $cvAnalysisService->getRemainingAnalyses(Auth::user());
+
+            Flux::toast(
+                text: "CV analysis completed successfully. You have {$remaining} analyses remaining today.",
+                heading: 'Analysis Complete',
+                variant: 'success',
+            );
+        } else {
+            $this->analysis = $newData;
         }
     }
 

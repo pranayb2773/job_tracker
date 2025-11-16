@@ -1,15 +1,18 @@
 <?php
 
 use App\Enums\DocumentType;
+use App\Jobs\ProcessCoverLetter;
 use App\Services\AI\Contracts\AIProviderInterface;
 use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 
 new class extends Component {
     public App\Models\JobApplication $application;
     public ?string $coverLetter = null;
+    public bool $isGenerating = false;
 
     public function mount(App\Models\JobApplication $application): void
     {
@@ -19,7 +22,7 @@ new class extends Component {
             : null;
     }
 
-    public function generateCoverLetter(AIProviderInterface $provider): void
+    public function generateCoverLetter(): void
     {
         $descHtml = (string)($this->application->job_description ?? '');
         $desc = mb_trim(strip_tags($descHtml));
@@ -47,34 +50,37 @@ new class extends Component {
         $input .= "\n\nROLE: " . ($this->application->job_title ?? '');
         $input .= "\nORG: " . ($this->application->organisation ?? '');
 
-        try {
-            set_time_limit(120);
-            $response = $provider->analyzeText($input, $systemPrompt);
-            $payload = null;
-            $decoded = json_decode($response, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                if (is_array($decoded)) {
-                    $this->coverLetter = isset($decoded['content']) ? mb_trim((string)$decoded['content']) : mb_trim($response);
-                    $payload = $decoded;
-                    $payload['generated_at'] = now()->toIso8601String();
-                } elseif (is_string($decoded)) {
-                    $this->coverLetter = mb_trim($decoded);
-                    $payload = ['content' => $this->coverLetter, 'generated_at' => now()->toIso8601String(),];
-                }
-            }
-            if ($payload === null) {
-                $this->coverLetter = mb_trim($response);
-                $payload = ['content' => $this->coverLetter, 'generated_at' => now()->toIso8601String(),];
-            }
-            $this->application->cover_letter = $payload;
-            $this->application->save();
+        $this->isGenerating = true;
+        $this->coverLetter = null; // Clear old data to prevent false success message
 
-            $limiter->hit(Auth::user(), 'role_analysis');
+        // Dispatch job to process in background
+        ProcessCoverLetter::dispatch($this->application, $input, $systemPrompt);
 
+        $limiter->hit(Auth::user(), 'role_analysis');
+
+        Flux::toast(
+            text: 'Cover letter generation started. This may take 2-3 minutes. The page will update automatically when complete.',
+            heading: 'Processing...',
+            variant: 'info'
+        );
+    }
+
+    #[On('refresh-cover-letter')]
+    public function refreshCoverLetter(): void
+    {
+        // Refresh the application model from database
+        $this->application = $this->application->fresh();
+        $newData = is_array($this->application->cover_letter ?? null)
+            ? (mb_trim((string)($this->application->cover_letter['content'] ?? '')) ?: null)
+            : null;
+
+        // Only show success if we actually got NEW data (wasn't null before)
+        if ($newData && !$this->coverLetter && $this->isGenerating) {
+            $this->isGenerating = false;
+            $this->coverLetter = $newData;
             Flux::toast(text: 'Cover letter generated successfully.', heading: 'Done', variant: 'success');
-        } catch (\Throwable $e) {
-            Flux::toast(text: 'Failed to generate cover letter. Please try again.', heading: 'Generation Failed', variant: 'danger');
-            logger()->error('Cover letter generation failed', ['user_id' => Auth::id(), 'application_id' => $this->application->id, 'error' => $e->getMessage(),]);
+        } else {
+            $this->coverLetter = $newData;
         }
     }
 
@@ -94,7 +100,7 @@ new class extends Component {
     }
 } ?>
 
-<div class="space-y-6">
+<div class="space-y-6" @if($isGenerating) wire:poll.5s="refreshCoverLetter" @endif>
     @if ($coverLetter && $application->documents->isNotEmpty())
         <div class="flex items-center justify-between">
             <flux:heading size="lg">
