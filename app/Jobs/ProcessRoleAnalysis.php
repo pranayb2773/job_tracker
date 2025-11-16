@@ -45,8 +45,6 @@ final class ProcessRoleAnalysis implements ShouldQueue
             // Update the application with analysis results
             $this->application->update([
                 'role_analysis' => $result->data,
-                'role_analysis_provider' => $result->provider,
-                'role_analysis_model' => $result->model,
             ]);
 
             Log::info('Role analysis completed successfully', [
