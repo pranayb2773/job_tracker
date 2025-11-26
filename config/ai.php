@@ -16,17 +16,17 @@ return [
         'gemini' => [
             'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
             'timeout' => (int)env('AI_TIMEOUT', 180),
-            'max_tokens' => (int)env('AI_MAX_TOKENS', 4000),
+            'max_tokens' => (int)env('AI_MAX_TOKENS', 8000),
         ],
         'claude' => [
             'model' => env('CLAUDE_MODEL', 'claude-sonnet-4-5-20250929'),
             'timeout' => (int)env('AI_TIMEOUT', 180),
-            'max_tokens' => (int)env('AI_MAX_TOKENS', 4000),
+            'max_tokens' => (int)env('AI_MAX_TOKENS', 8000),
         ],
         'openai' => [
             'model' => env('OPENAI_MODEL', 'gpt-4o'),
             'timeout' => (int)env('AI_TIMEOUT', 180),
-            'max_tokens' => (int)env('AI_MAX_TOKENS', 4000),
+            'max_tokens' => (int)env('AI_MAX_TOKENS', 8000),
         ],
     ],
 
@@ -41,7 +41,7 @@ return [
         | Rate limiting configuration
         */
         'rate_limit' => [
-            'daily_limit' => (int)env('CV_ANALYSIS_DAILY_LIMIT', 10),
+            'daily_limit' => (int)env('CV_ANALYSIS_DAILY_LIMIT', 50),
         ],
     ],
 

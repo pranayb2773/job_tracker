@@ -5,36 +5,16 @@ declare(strict_types=1);
 namespace App\Services\AI\Contracts;
 
 use App\Models\Document;
-use App\Services\CVAnalysis\DTOs\AnalysisResult;
+use App\Services\AI\DTOs\AnalysisResult;
 
 interface AIProviderInterface
 {
     /**
-     * Analyze a CV/Resume document using AI.
-     */
-    public function analyze(
-        Document $document,
-        string $systemPrompt,
-        ?array $previousAnalysis = null
-    ): AnalysisResult;
-
-    /**
      * Analyze text content using AI.
      */
-    public function analyzeText(
-        string $text,
-        string $systemPrompt
-    ): string;
-
-    /**
-     * Perform profile matching analysis between a CV and job description.
-     */
-    public function analyzeProfileMatching(
-        Document $cvDocument,
-        string $jobDescription,
-        string $jobTitle,
-        string $organisation,
-        string $systemPrompt
+    public function analyze(
+        string $systemPrompt,
+        array  $userMessages
     ): AnalysisResult;
 
     /**

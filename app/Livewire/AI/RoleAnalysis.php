@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\AI;
 
 use App\Exceptions\AnalysisRateLimitException;
-use App\Services\RoleAnalysis\RoleAnalysisService;
+use App\Services\AI\RoleAnalysisService;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

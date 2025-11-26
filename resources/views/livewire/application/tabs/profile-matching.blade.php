@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\DocumentType;
+use App\Services\AI\ApplicationAIService;
 use App\Services\AI\Contracts\AIProviderInterface;
 use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Flux\Flux;
@@ -23,7 +24,7 @@ new class extends Component {
         $this->computeKeywordChartData();
     }
 
-    public function generateProfileMatching(AIProviderInterface $provider): void
+    public function generateProfileMatching(ApplicationAIService $applicationAIService): void
     {
         $descHtml = (string)($this->application->job_description ?? '');
         $desc = mb_trim(strip_tags($descHtml));
@@ -33,51 +34,19 @@ new class extends Component {
             return;
         }
 
-        $cv = $this->application->documents->first(fn($d) => $d->type?->value === DocumentType::CurriculumVitae->value);
-        if (!$cv) {
-            Flux::toast(text: 'A comprehensive profile matching analysis cannot be performed without a CV. Please upload your CV first.', heading: 'CV Required', variant: 'warning');
-            return;
-        }
-
-        $limiter = app(AnalysisRateLimiter::class);
         try {
-            $limiter->check(Auth::user(), 'role_analysis');
-        } catch (\Throwable $e) {
-            Flux::toast(text: 'Daily limit reached for AI generation. Try again tomorrow.', heading: 'Limit Reached', variant: 'warning');
-            return;
-        }
+            $result = $applicationAIService->generateProfileMatchingAnalysis($this->application);
 
-        $systemPrompt = mb_trim((string)view('prompts.profile-matching')->render());
-        if ($systemPrompt === '') {
-            $systemPrompt = 'Analyze the job description and CV to provide a comprehensive profile matching analysis with scores, strengths, gaps, keyword analysis, skills analysis, experience match, education match, and actionable suggestions.';
-        }
-
-        try {
-            set_time_limit(180);
-            $result = $provider->analyzeProfileMatching(
-                cvDocument: $cv,
-                jobDescription: $desc,
-                jobTitle: $this->application->job_title ?? 'Not specified',
-                organisation: $this->application->organisation ?? 'Not specified',
-                systemPrompt: $systemPrompt
-            );
-
-            $decoded = $result->data;
-            if (!is_array($decoded)) {
-                throw new RuntimeException('Profile matching: invalid response format');
-            }
-
-            $this->profileMatching = $decoded;
-            $this->application->profile_matching = $decoded;
+            $this->profileMatching = $result->data;
+            $this->application->profile_matching = $result->data;
             $this->application->save();
-
-            $limiter->hit(Auth::user(), 'role_analysis');
 
             $this->computeKeywordChartData();
 
             Flux::toast(text: 'Profile matching generated successfully.', heading: 'Done', variant: 'success');
         } catch (\Throwable $e) {
             Flux::toast(text: $e->getMessage(), heading: 'Generation Failed', variant: 'danger');
+
             logger()->error('Profile matching generation failed', [
                 'user_id' => Auth::id(),
                 'application_id' => $this->application->id,

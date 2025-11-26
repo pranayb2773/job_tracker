@@ -8,7 +8,7 @@ Structure:
 
 Greetings to the hiring team
 
-I am writing to express my strong interest in the {ROLE} role at {ORG}. With a comprehensive background in [The most important skillset], I am enthusiastic about contributing to {ORG}'s mission of [MISSION].
+I am writing to express my strong interest in the {{ $role }} role at {{ $organisation }}. With a comprehensive background in [The most important skillset], I am enthusiastic about contributing to {ORG}'s mission of [MISSION].
 
 Intro- Use a catchy hook
 [2 lines- why you are interested/ your biggest achievement and how it relates to the role]- Ideally keep this generic since it will be recycled for 100s of apps.

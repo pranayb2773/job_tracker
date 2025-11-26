@@ -8,8 +8,8 @@ use App\Services\AI\Contracts\AIProviderInterface;
 use App\Services\AI\Providers\ClaudeProvider;
 use App\Services\AI\Providers\GeminiProvider;
 use App\Services\AI\RateLimiting\AnalysisRateLimiter;
-use App\Services\CVAnalysis\CVAnalysisService;
-use App\Services\RoleAnalysis\RoleAnalysisService;
+use App\Services\AI\CVAnalysisService;
+use App\Services\AI\RoleAnalysisService;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 
@@ -25,7 +25,7 @@ final class AnalysisServiceProvider extends ServiceProvider
             $provider = config('ai.cv_analysis.default_provider');
             $providerConfig = config("ai.providers.{$provider}");
 
-            if (! $providerConfig) {
+            if (!$providerConfig) {
                 throw new InvalidArgumentException("Invalid CV analysis provider: {$provider}");
             }
 
@@ -69,7 +69,7 @@ final class AnalysisServiceProvider extends ServiceProvider
             $provider = config('ai.role_analysis.default_provider', config('ai.cv_analysis.default_provider'));
             $baseProviderConfig = config("ai.providers.{$provider}");
 
-            if (! $baseProviderConfig) {
+            if (!$baseProviderConfig) {
                 throw new InvalidArgumentException("Invalid role analysis provider: {$provider}");
             }
 

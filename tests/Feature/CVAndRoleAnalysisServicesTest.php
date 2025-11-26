@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Models\Document;
 use App\Models\JobApplication;
 use App\Models\User;
-use App\Services\CVAnalysis\CVAnalysisService;
-use App\Services\RoleAnalysis\RoleAnalysisService;
+use App\Services\AI\CVAnalysisService;
+use App\Services\AI\RoleAnalysisService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 

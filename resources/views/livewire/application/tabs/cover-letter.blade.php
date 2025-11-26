@@ -1,11 +1,13 @@
 <?php
 
 use App\Enums\DocumentType;
+use App\Services\AI\ApplicationAIService;
 use App\Services\AI\Contracts\AIProviderInterface;
 use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 new class extends Component {
     public App\Models\JobApplication $application;
@@ -19,7 +21,7 @@ new class extends Component {
             : null;
     }
 
-    public function generateCoverLetter(AIProviderInterface $provider): void
+    public function generateCoverLetter(ApplicationAIService $applicationAIService): void
     {
         $descHtml = (string)($this->application->job_description ?? '');
         $desc = mb_trim(strip_tags($descHtml));
@@ -28,113 +30,23 @@ new class extends Component {
             return;
         }
 
-        $limiter = app(AnalysisRateLimiter::class);
         try {
-            $limiter->check(Auth::user(), 'role_analysis');
-        } catch (\Throwable $e) {
-            Flux::toast(text: 'Daily limit reached for AI generation. Try again tomorrow.', heading: 'Limit Reached', variant: 'warning');
-            return;
-        }
+            $result = $applicationAIService->generateCoverLetter($this->application);
 
-        $systemPrompt = mb_trim((string)view('prompts.cover-letter')->render()) ?: 'Draft a concise, UK English cover letter using the provided job description and CV attachment. Keep under 350 words.';
-
-        $cv = $this->application->documents->first(fn($d) => $d->type?->value === DocumentType::CurriculumVitae->value);
-
-        $input = "JOB DESCRIPTION:\n" . $desc;
-        if ($cv) {
-            $input .= "\n\nCV FILENAME:\n" . ($cv->file_name ?? 'cv.pdf') . "\n";
-        }
-        $input .= "\n\nROLE: " . ($this->application->job_title ?? '');
-        $input .= "\nORG: " . ($this->application->organisation ?? '');
-
-        try {
-            set_time_limit(120);
-            $response = $provider->analyzeText($input, $systemPrompt);
-            $payload = null;
-
-            $decoded = json_decode($response, true);
-
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded['content']) && is_string($decoded['content'])) {
-                $this->coverLetter = mb_trim($decoded['content']);
-
-                $payload = [
-                    'content' => $this->coverLetter,
-                    'data' => $decoded,
-                    'generated_at' => now()->toIso8601String(),
-                ];
-            } else {
-                $decoded = json_decode($response, true);
-
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    if (is_array($decoded)) {
-                        $content = $decoded['content'] ?? ($decoded['cover_letter'] ?? null);
-
-                        if (is_array($content)) {
-                            $content = implode("\n\n", array_filter(array_map('strval', $content)));
-                        }
-
-                        if (! is_string($content) || mb_trim($content) === '') {
-                            $strings = [];
-                            $walker = function ($value) use (&$strings, &$walker): void {
-                                if (is_string($value)) {
-                                    $strings[] = $value;
-
-                                    return;
-                                }
-
-                                if (is_array($value)) {
-                                    foreach ($value as $inner) {
-                                        $walker($inner);
-                                    }
-                                }
-                            };
-
-                            $walker($decoded);
-
-                            $content = implode("\n\n", array_filter(array_map('strval', $strings)));
-                        }
-
-                        $this->coverLetter = mb_trim((string) $content);
-
-                        if ($this->coverLetter === '') {
-                            $this->coverLetter = mb_trim($response);
-                        }
-
-                        $payload = [
-                            'content' => $this->coverLetter,
-                            'data' => $decoded,
-                            'generated_at' => now()->toIso8601String(),
-                        ];
-                    } elseif (is_string($decoded)) {
-                        $this->coverLetter = mb_trim($decoded);
-                        $payload = [
-                            'content' => $this->coverLetter,
-                            'generated_at' => now()->toIso8601String(),
-                        ];
-                    }
-                }
-            }
-
-            if ($payload === null) {
-                $this->coverLetter = mb_trim($response);
-                $payload = [
-                    'content' => $this->coverLetter,
-                    'generated_at' => now()->toIso8601String(),
-                ];
-            }
-            $this->application->cover_letter = $payload;
+            $this->application->cover_letter = $result->data;
             $this->application->save();
 
-            $limiter->hit(Auth::user(), 'role_analysis');
+            $this->coverLetter = $result->data['content'];
 
             Flux::toast(text: 'Cover letter generated successfully.', heading: 'Done', variant: 'success');
         } catch (\Throwable $e) {
-            Flux::toast(text: 'Failed to generate cover letter. Please try again.', heading: 'Generation Failed', variant: 'danger');
+            Flux::toast(text: $e->getMessage(), heading: 'Generation Failed', variant: 'danger');
+
             logger()->error('Cover letter generation failed', ['user_id' => Auth::id(), 'application_id' => $this->application->id, 'error' => $e->getMessage(),]);
         }
     }
 
-    public function downloadCoverLetter(): ?\Symfony\Component\HttpFoundation\StreamedResponse
+    public function downloadCoverLetter(): ?StreamedResponse
     {
         $content = (string)($this->application->cover_letter['content'] ?? $this->coverLetter ?? '');
         if ($content === '') {

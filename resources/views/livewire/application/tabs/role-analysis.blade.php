@@ -1,9 +1,10 @@
 <?php
 
-use App\Services\RoleAnalysis\RoleAnalysisService;
+use App\Services\AI\RoleAnalysisService;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 new class extends Component {
     public App\Models\JobApplication $application;
@@ -55,7 +56,7 @@ new class extends Component {
             );
         } catch (\Throwable $e) {
             Flux::toast(
-                text: 'An error occurred while analyzing the role. Please try again.',
+                text: $e->getMessage(),
                 heading: 'Analysis Failed',
                 variant: 'danger',
             );
@@ -67,6 +68,48 @@ new class extends Component {
         } finally {
             $this->isAnalyzingRole = false;
         }
+    }
+
+    public function downloadAnalysis(): StreamedResponse
+    {
+        if (!$this->roleAnalysis) {
+            Flux::toast(
+                text: 'No analysis available to download.',
+                heading: 'Download Failed',
+                variant: 'danger',
+            );
+
+            return response()->streamDownload(fn() => '', '');
+        }
+
+        $html = view('pdf.role-analysis', [
+            'analysis' => $this->roleAnalysis,
+            'application' => $this->application,
+        ])->render();
+
+        $fileName = str($this->application->job_title)
+            ->slug()
+            ->append('-role-analysis-')
+            ->append(date('Y-m-d'))
+            ->append('.pdf')
+            ->toString();
+
+        // Generate PDF to a temporary file
+        $tempPath = storage_path('app/temp/' . uniqid('pdf_') . '.pdf');
+
+        \Spatie\LaravelPdf\Facades\Pdf::html($html)
+            ->format('A4')
+            ->withBrowsershot(function (\Spatie\Browsershot\Browsershot $browsershot): void {
+                $browsershot->scale(0.8);
+                $browsershot->margins(10, 10, 10, 10);
+            })
+            ->save($tempPath);
+
+        // Stream the file and delete after
+        return response()->streamDownload(function () use ($tempPath): void {
+            echo file_get_contents($tempPath);
+            @unlink($tempPath);
+        }, $fileName);
     }
 } ?>
 
