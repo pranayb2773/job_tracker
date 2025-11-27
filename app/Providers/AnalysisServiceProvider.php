@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Services\AI\Contracts\AIProviderInterface;
+use App\Services\AI\CVAnalysisService;
 use App\Services\AI\Providers\ClaudeProvider;
 use App\Services\AI\Providers\GeminiProvider;
+use App\Services\AI\Providers\GroqProvider;
 use App\Services\AI\RateLimiting\AnalysisRateLimiter;
-use App\Services\AI\CVAnalysisService;
 use App\Services\AI\RoleAnalysisService;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
@@ -22,11 +23,11 @@ final class AnalysisServiceProvider extends ServiceProvider
     {
         // Bind the AI provider based on configuration
         $this->app->bind(AIProviderInterface::class, function ($app) {
-            $provider = config('ai.cv_analysis.default_provider');
+            $provider = config('ai.ai_analysis.default_provider');
             $providerConfig = config("ai.providers.{$provider}");
 
-            if (!$providerConfig) {
-                throw new InvalidArgumentException("Invalid CV analysis provider: {$provider}");
+            if (! $providerConfig) {
+                throw new InvalidArgumentException("Invalid AI analysis provider: {$provider}");
             }
 
             return match ($provider) {
@@ -40,18 +41,21 @@ final class AnalysisServiceProvider extends ServiceProvider
                     timeout: $providerConfig['timeout'],
                     maxTokens: $providerConfig['max_tokens'],
                 ),
+                'groq' => new GroqProvider(
+                    model: $providerConfig['model'],
+                    timeout: $providerConfig['timeout'],
+                    maxTokens: $providerConfig['max_tokens'],
+                ),
                 default => throw new InvalidArgumentException("Unsupported provider: {$provider}"),
             };
         });
 
         // Bind the Rate Limiter
         $this->app->singleton(AnalysisRateLimiter::class, function ($app) {
-            $cvDailyLimit = config('ai.cv_analysis.rate_limit.daily_limit', 10);
-            $roleDailyLimit = config('ai.role_analysis.rate_limit.daily_limit', 20);
+            $dailyLimit = config('ai.ai_analysis.rate_limit.daily_limit', 30);
 
             return new AnalysisRateLimiter(
-                dailyLimit: $cvDailyLimit,
-                roleAnalysisDailyLimit: $roleDailyLimit
+                dailyLimit: $dailyLimit
             );
         });
 
@@ -63,33 +67,10 @@ final class AnalysisServiceProvider extends ServiceProvider
             );
         });
 
-        // Bind the Role Analysis Service with dedicated AI provider
+        // Bind the Role Analysis Service
         $this->app->singleton(RoleAnalysisService::class, function ($app) {
-            // Get role analysis provider configuration
-            $provider = config('ai.role_analysis.default_provider', config('ai.cv_analysis.default_provider'));
-            $baseProviderConfig = config("ai.providers.{$provider}");
-
-            if (!$baseProviderConfig) {
-                throw new InvalidArgumentException("Invalid role analysis provider: {$provider}");
-            }
-
-            // Create provider with role analysis specific configuration
-            $roleAnalysisProvider = match ($provider) {
-                'gemini' => new GeminiProvider(
-                    model: $baseProviderConfig['model'],
-                    timeout: config('ai.role_analysis.timeout', $baseProviderConfig['timeout']),
-                    maxTokens: config('ai.role_analysis.max_tokens', 8000),
-                ),
-                'claude' => new ClaudeProvider(
-                    model: $baseProviderConfig['model'],
-                    timeout: config('ai.role_analysis.timeout', $baseProviderConfig['timeout']),
-                    maxTokens: config('ai.role_analysis.max_tokens', 8000),
-                ),
-                default => throw new InvalidArgumentException("Unsupported provider: {$provider}"),
-            };
-
             return new RoleAnalysisService(
-                aiProvider: $roleAnalysisProvider,
+                aiProvider: $app->make(AIProviderInterface::class),
                 rateLimiter: $app->make(AnalysisRateLimiter::class)
             );
         });

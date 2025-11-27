@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\AI\Contracts;
 
-use App\Models\Document;
 use App\Services\AI\DTOs\AnalysisResult;
 
 interface AIProviderInterface
@@ -14,7 +13,7 @@ interface AIProviderInterface
      */
     public function analyze(
         string $systemPrompt,
-        array  $userMessages
+        array $userMessages
     ): AnalysisResult;
 
     /**

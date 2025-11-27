@@ -83,7 +83,7 @@ final class AnalyzeDocument extends Component
                 'error' => $e->getMessage(),
             ]);
             Flux::toast(
-                text: 'An error occurred during analysis: ' . $e->getMessage(),
+                text: $e->getMessage(),
                 heading: 'Analysis Failed',
                 variant: 'danger',
             );

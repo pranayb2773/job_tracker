@@ -67,13 +67,13 @@ final class Dashboard extends Component
     }
 
     /**
-     * Get remaining CV analyses for today.
+     * Get remaining AI analyses for today.
      */
     private function getRemainingAnalyses(): int
     {
         $rateLimiter = app(AnalysisRateLimiter::class);
 
-        return $rateLimiter->remaining(Auth::user(), 'cv_analysis');
+        return $rateLimiter->remaining(Auth::user());
     }
 
     /**

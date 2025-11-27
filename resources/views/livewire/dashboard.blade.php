@@ -233,12 +233,12 @@
             </div>
 
             @php
-                $cvTotal = (int) config('ai.cv_analysis.rate_limit.daily_limit', 10);
-                $cvRemaining = (int) $remainingAnalyses;
-                $cvUsed = max(0, $cvTotal - $cvRemaining);
+                $analysisTotal = (int) config('ai.ai_analysis.rate_limit.daily_limit', 30);
+                $analysisRemaining = (int) $remainingAnalyses;
+                $analysisUsed = max(0, $analysisTotal - $analysisRemaining);
                 $r3 = 22;
                 $circ3 = 2 * M_PI * $r3;
-                $portionRemain = $cvRemaining / max($cvTotal, 1);
+                $portionRemain = $analysisRemaining / max($analysisTotal, 1);
                 $dashRemain = $portionRemain * $circ3;
                 $gapRemain = $circ3 - $dashRemain;
             @endphp
@@ -275,7 +275,7 @@
                             <div
                                 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100"
                             >
-                                {{ $cvRemaining }}
+                                {{ $analysisRemaining }}
                             </div>
                             <div
                                 class="text-xs text-zinc-600 dark:text-zinc-400"
@@ -300,7 +300,7 @@
                         <span
                             class="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
                         >
-                            {{ $cvRemaining }}
+                            {{ $analysisRemaining }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between">
@@ -317,7 +317,7 @@
                         <span
                             class="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
                         >
-                            {{ $cvUsed }}
+                            {{ $analysisUsed }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between">
@@ -327,7 +327,7 @@
                         <span
                             class="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
                         >
-                            {{ $cvTotal }}
+                            {{ $analysisTotal }}
                         </span>
                     </div>
                     <div class="text-xs text-zinc-500 dark:text-zinc-400">

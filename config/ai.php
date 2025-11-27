@@ -15,64 +15,47 @@ return [
     'providers' => [
         'gemini' => [
             'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
-            'timeout' => (int)env('AI_TIMEOUT', 180),
-            'max_tokens' => (int)env('AI_MAX_TOKENS', 8000),
+            'timeout' => (int) env('AI_TIMEOUT', 180),
+            'max_tokens' => (int) env('AI_MAX_TOKENS', 8000),
         ],
         'claude' => [
             'model' => env('CLAUDE_MODEL', 'claude-sonnet-4-5-20250929'),
-            'timeout' => (int)env('AI_TIMEOUT', 180),
-            'max_tokens' => (int)env('AI_MAX_TOKENS', 8000),
+            'timeout' => (int) env('AI_TIMEOUT', 180),
+            'max_tokens' => (int) env('AI_MAX_TOKENS', 8000),
         ],
         'openai' => [
             'model' => env('OPENAI_MODEL', 'gpt-4o'),
-            'timeout' => (int)env('AI_TIMEOUT', 180),
-            'max_tokens' => (int)env('AI_MAX_TOKENS', 8000),
+            'timeout' => (int) env('AI_TIMEOUT', 180),
+            'max_tokens' => (int) env('AI_MAX_TOKENS', 8000),
         ],
-    ],
-
-    'cv_analysis' => [
-        /*
-        | Default AI provider for CV analysis.
-        | Supported: 'gemini', 'claude', 'openai'
-        */
-        'default_provider' => env('CV_ANALYSIS_PROVIDER', 'gemini'),
-
-        /*
-        | Rate limiting configuration
-        */
-        'rate_limit' => [
-            'daily_limit' => (int)env('CV_ANALYSIS_DAILY_LIMIT', 50),
+        'groq' => [
+            'model' => env('GROQ_MODEL', 'moonshotai/kimi-k2-instruct-0905'),
+            'timeout' => (int) env('AI_TIMEOUT', 180),
+            'max_tokens' => (int) env('AI_MAX_TOKENS', 8000),
         ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Role Analysis Configuration
+    | AI Analysis Configuration
     |--------------------------------------------------------------------------
     |
-    | Configuration for AI-powered job description role analysis.
+    | Configuration for AI-powered analysis (CV/Resume and Job Roles).
     |
     */
 
-    'role_analysis' => [
+    'ai_analysis' => [
         /*
-        | Default AI provider for role analysis.
-        | Supported: 'gemini', 'claude', 'openai'
+        | Default AI provider for analysis.
+        | Supported: 'gemini', 'claude', 'openai', 'groq'
         */
-        'default_provider' => env('ROLE_ANALYSIS_PROVIDER', env('CV_ANALYSIS_PROVIDER', 'gemini')),
+        'default_provider' => env('AI_ANALYSIS_PROVIDER', 'gemini'),
 
         /*
         | Rate limiting configuration
         */
         'rate_limit' => [
-            'daily_limit' => (int)env('ROLE_ANALYSIS_DAILY_LIMIT', 30),
+            'daily_limit' => (int) env('AI_ANALYSIS_DAILY_LIMIT', 30),
         ],
-
-        /*
-        | AI configuration for role analysis
-        | Role analysis requires more tokens and time due to comprehensive output format
-        */
-        'timeout' => (int)env('ROLE_ANALYSIS_TIMEOUT', 240),
-        'max_tokens' => (int)env('ROLE_ANALYSIS_MAX_TOKENS', 8000),
     ],
 ];

@@ -8,8 +8,8 @@ use App\Exceptions\AnalysisRateLimitException;
 use App\Models\Document;
 use App\Models\User;
 use App\Services\AI\Contracts\AIProviderInterface;
-use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use App\Services\AI\DTOs\AnalysisResult;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
@@ -22,9 +22,7 @@ final readonly class CVAnalysisService
     public function __construct(
         private AIProviderInterface $provider,
         private AnalysisRateLimiter $rateLimiter
-    )
-    {
-    }
+    ) {}
 
     /**
      * Analyze a CV/Resume document using the configured AI provider.
@@ -79,16 +77,13 @@ final readonly class CVAnalysisService
     }
 
     /**
-     * @param Document $document
-     * @return string
-     *
      * @throws Exception
      */
     private function getDocumentText(Document $document): string
     {
         $filePath = Storage::disk('local')->path($document->file_path);
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new Exception('File does not exist.');
         }
 
@@ -108,9 +103,8 @@ final readonly class CVAnalysisService
         // Build message chain
         $messages = [];
 
-
         $messages[] = new UserMessage(
-            'Please analyze this CV/Resume document.' . PHP_EOL . PHP_EOL . $this->getDocumentText($document),
+            'Please analyze this CV/Resume document.'.PHP_EOL.PHP_EOL.$this->getDocumentText($document),
         );
 
         // Add previous analysis as conversation history if this is a regeneration

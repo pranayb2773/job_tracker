@@ -10,8 +10,8 @@ use App\Models\Document;
 use App\Models\JobApplication;
 use App\Models\User;
 use App\Services\AI\Contracts\AIProviderInterface;
-use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use App\Services\AI\DTOs\AnalysisResult;
+use App\Services\AI\RateLimiting\AnalysisRateLimiter;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
@@ -24,9 +24,7 @@ final readonly class ApplicationAIService
     public function __construct(
         private AIProviderInterface $provider,
         private AnalysisRateLimiter $rateLimiter
-    )
-    {
-    }
+    ) {}
 
     /**
      * Generate a cover letter for a job application using AI based on the job description and CV/Resume document.
@@ -47,7 +45,7 @@ final readonly class ApplicationAIService
         $systemPrompt = view('prompts.cover-letter')
             ->with([
                 'role' => $application->job_title,
-                'organisation' => $application->organisation
+                'organisation' => $application->organisation,
             ])
             ->render();
 
@@ -63,10 +61,6 @@ final readonly class ApplicationAIService
     }
 
     /**
-     * @param JobApplication $application
-     *
-     * @return AnalysisResult
-     *
      * @throws AnalysisRateLimitException
      * @throws Throwable
      */
@@ -117,16 +111,13 @@ final readonly class ApplicationAIService
     }
 
     /**
-     * @param Document $document
-     * @return string
-     *
      * @throws Exception
      */
     private function getDocumentText(Document $document): string
     {
         $filePath = Storage::disk('local')->path($document->file_path);
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new Exception('File does not exist.');
         }
 
@@ -145,14 +136,14 @@ final readonly class ApplicationAIService
         $document = $application->documents()->firstWhere('type', DocumentType::CurriculumVitae->value);
 
         // Get the job description
-        $descHtml = (string)($application->job_description ?? '');
+        $descHtml = (string) ($application->job_description ?? '');
         $desc = mb_trim(strip_tags($descHtml));
 
         // Build message chain
         $messages = [];
 
         $messages[] = new UserMessage(
-            'Please analyze the CV document attached and compare it against the job description above. Provide a comprehensive profile matching analysis.' . PHP_EOL . PHP_EOL . $this->getDocumentText($document) . PHP_EOL . PHP_EOL . $desc,
+            'Please analyze the CV document attached and compare it against the job description above. Provide a comprehensive profile matching analysis.'.PHP_EOL.PHP_EOL.$this->getDocumentText($document).PHP_EOL.PHP_EOL.$desc,
         );
 
         // Add previous analysis as conversation history if this is a regeneration
@@ -175,14 +166,14 @@ final readonly class ApplicationAIService
         $document = $application->documents()->firstWhere('type', DocumentType::CurriculumVitae->value);
 
         // Get the job description
-        $descHtml = (string)($application->job_description ?? '');
+        $descHtml = (string) ($application->job_description ?? '');
         $desc = mb_trim(strip_tags($descHtml));
 
         // Build message chain
         $messages = [];
 
         $messages[] = new UserMessage(
-            'Please generate cover letter using job description and CV/Resume document.' . PHP_EOL . PHP_EOL . $this->getDocumentText($document) . PHP_EOL . PHP_EOL . $desc,
+            'Please generate cover letter using job description and CV/Resume document.'.PHP_EOL.PHP_EOL.$this->getDocumentText($document).PHP_EOL.PHP_EOL.$desc,
         );
 
         // Add previous analysis as conversation history if this is a regeneration
