@@ -23,6 +23,14 @@ final class AIAnalysis extends Model
         'analyzed_at',
     ];
 
+    /**
+     * Get the parent-analyzable model (Document or JobApplication).
+     */
+    public function analyzable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
     protected function casts(): array
     {
         return [
@@ -31,13 +39,5 @@ final class AIAnalysis extends Model
             'prompt_tokens' => 'integer',
             'completion_tokens' => 'integer',
         ];
-    }
-
-    /**
-     * Get the parent-analyzable model (Document or JobApplication).
-     */
-    public function analyzable(): MorphTo
-    {
-        return $this->morphTo();
     }
 }

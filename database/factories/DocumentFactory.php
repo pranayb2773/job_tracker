@@ -48,33 +48,40 @@ final class DocumentFactory extends Factory
      */
     public function analyzed(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'analysis' => [
-                'overall_score' => fake()->numberBetween(60, 100),
-                'summary' => fake()->paragraph(),
-                'score_label' => fake()->randomElement(['GOOD', 'STRONG', 'EXCELLENT']),
-                'score_description' => fake()->sentence(),
-                'top_recommendations' => [
-                    fake()->sentence(),
-                    fake()->sentence(),
-                    fake()->sentence(),
-                ],
-                'scoring_dimensions' => [
-                    'metadata_contact' => [
-                        'score' => fake()->numberBetween(70, 100),
-                        'label' => 'Metadata & Contact Information',
-                        'description' => fake()->sentence(),
+        return $this->afterCreating(function (\App\Models\Document $document) {
+            $document->aiAnalyses()->create([
+                'type' => 'document',
+                'data' => [
+                    'overall_score' => fake()->numberBetween(60, 100),
+                    'summary' => fake()->paragraph(),
+                    'score_label' => fake()->randomElement(['GOOD', 'STRONG', 'EXCELLENT']),
+                    'score_description' => fake()->sentence(),
+                    'top_recommendations' => [
+                        fake()->sentence(),
+                        fake()->sentence(),
+                        fake()->sentence(),
+                    ],
+                    'scoring_dimensions' => [
+                        'metadata_contact' => [
+                            'score' => fake()->numberBetween(70, 100),
+                            'label' => 'Metadata & Contact Information',
+                            'description' => fake()->sentence(),
+                        ],
+                    ],
+                    'penalties' => [],
+                    'section_analysis' => [
+                        'professional_summary' => [
+                            'status' => 'success',
+                            'feedback' => fake()->sentence(),
+                        ],
                     ],
                 ],
-                'penalties' => [],
-                'section_analysis' => [
-                    'professional_summary' => [
-                        'status' => 'success',
-                        'feedback' => fake()->sentence(),
-                    ],
-                ],
-            ],
-            'analyzed_at' => now(),
-        ]);
+                'provider' => fake()->randomElement(['gemini', 'claude', 'groq']),
+                'model' => 'test-model',
+                'prompt_tokens' => fake()->numberBetween(100, 500),
+                'completion_tokens' => fake()->numberBetween(50, 200),
+                'analyzed_at' => now(),
+            ]);
+        });
     }
 }

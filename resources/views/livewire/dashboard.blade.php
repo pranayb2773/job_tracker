@@ -223,11 +223,11 @@
             @endif
         </flux:card>
 
-        <!-- CV Analysis Limit Widget -->
+        <!-- AI Analysis Limit Widget -->
         <flux:card class="space-y-4">
             <div class="flex items-center justify-between">
                 <flux:heading size="lg">
-                    {{ __('CV Analysis Limit') }}
+                    {{ __('AI Analysis Limit') }}
                 </flux:heading>
                 <flux:icon.sparkles variant="outline" class="size-6" />
             </div>

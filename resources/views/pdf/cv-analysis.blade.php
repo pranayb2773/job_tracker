@@ -342,8 +342,8 @@
         <h1>{{ $document->title }}</h1>
         <div class="subtitle">
             AI-Powered CV Analysis
-            @if ($document->analyzed_at)
-                - {{ $document->analyzed_at->format('F j, Y \a\t g:i A') }}
+            @if ($document->lastestAnalysis->analyzed_at)
+                - {{ $document->lastestAnalysis->analyzed_at->format('F j, Y \a\t g:i A') }}
             @endif
         </div>
     </div>

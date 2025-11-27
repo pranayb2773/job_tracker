@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-enum ApplicationPriority : string
+enum ApplicationPriority: string
 {
     case VeryHigh = 'very_high';
     case High = 'high';

@@ -85,24 +85,24 @@ final class RoleAnalysis extends Component
 
     public function downloadAnalysis(): StreamedResponse
     {
-        if (!$this->analysis) {
+        if (! $this->analysis) {
             Flux::toast(
                 text: 'No analysis available to download.',
                 heading: 'Download Failed',
                 variant: 'danger',
             );
 
-            return response()->streamDownload(fn() => '', '');
+            return response()->streamDownload(fn () => '', '');
         }
 
         $html = view('pdf.role-analysis', [
             'analysis' => $this->analysis,
         ])->render();
 
-        $fileName = 'role-analysis-' . date('Y-m-d-His') . '.pdf';
+        $fileName = 'role-analysis-'.date('Y-m-d-His').'.pdf';
 
         // Generate PDF to temporary file
-        $tempPath = storage_path('app/temp/' . uniqid('pdf_') . '.pdf');
+        $tempPath = storage_path('app/temp/'.uniqid('pdf_').'.pdf');
 
         Pdf::html($html)
             ->format('A4')
@@ -122,6 +122,6 @@ final class RoleAnalysis extends Component
     public function render(): View
     {
         return view('livewire.ai.role-analysis')
-            ->title(config('app.name') . ' | AI Role Analysis');
+            ->title(config('app.name').' | AI Role Analysis');
     }
 }

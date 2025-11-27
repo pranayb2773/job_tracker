@@ -46,4 +46,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('role-analysis', RoleAnalysis::class)->name('role-analysis.show');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Application;
 
+use App\Enums\ApplicationStatus;
 use App\Livewire\Forms\JobApplicationForm;
 use App\Models\Document;
 use App\Models\JobApplication;
-use App\Enums\ApplicationStatus;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +35,7 @@ final class EditJobApplication extends Component
     public function render(): View
     {
         return view('livewire.application.edit-job-application')
-            ->title(config('app.name') . ' | Edit Application');
+            ->title(config('app.name').' | Edit Application');
     }
 
     public function save(): void

@@ -26,9 +26,9 @@ final class AnalysisRateLimitException extends Exception
         $minutes = floor(($this->resetInSeconds % 3600) / 60);
 
         if ($hours > 0) {
-            return "{$hours} hour" . ($hours > 1 ? 's' : '') . " and {$minutes} minute" . ($minutes !== 1 ? 's' : '');
+            return "{$hours} hour".($hours > 1 ? 's' : '')." and {$minutes} minute".($minutes !== 1 ? 's' : '');
         }
 
-        return "{$minutes} minute" . ($minutes !== 1 ? 's' : '');
+        return "{$minutes} minute".($minutes !== 1 ? 's' : '');
     }
 }

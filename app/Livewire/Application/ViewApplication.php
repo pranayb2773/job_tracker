@@ -33,9 +33,8 @@ final class ViewApplication extends Component
     public function render(): View
     {
         return view('livewire.application.view-application')
-            ->title(config('app.name') . ' | ' . $this->application->job_title);
+            ->title(config('app.name').' | '.$this->application->job_title);
     }
-
 
     public function downloadDocument(int $documentId): ?StreamedResponse
     {
@@ -45,7 +44,7 @@ final class ViewApplication extends Component
             ->where('documents.id', $documentId)
             ->firstOrFail();
 
-        if (!Storage::disk('local')->exists($document->file_path)) {
+        if (! Storage::disk('local')->exists($document->file_path)) {
             Flux::toast(
                 text: 'File not found.',
                 heading: 'Download Failed',
@@ -60,5 +59,4 @@ final class ViewApplication extends Component
             $document->file_name
         );
     }
-
 }

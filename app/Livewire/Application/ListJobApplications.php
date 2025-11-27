@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Application;
 
 use App\Models\JobApplication;
-use App\Models\JobApplicationDocument;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -41,10 +40,10 @@ final class ListJobApplications extends Component
     public function render(): View
     {
         $this->applicationIds = $this->allApplicationIds();
-        $this->applicationIdsOnPage = $this->applications->map(fn(JobApplication $application) => (string)$application->id)->toArray();
+        $this->applicationIdsOnPage = $this->applications->map(fn (JobApplication $application) => (string) $application->id)->toArray();
 
         return view('livewire.application.list-job-applications')
-            ->title(config('app.name') . ' | List Applications');
+            ->title(config('app.name').' | List Applications');
     }
 
     public function updated(string $property): void
@@ -103,17 +102,6 @@ final class ListJobApplications extends Component
         };
     }
 
-    protected function allApplicationIds(): array
-    {
-        return JobApplication::query()
-            ->whereBelongsTo(Auth::user())
-            ->when($this->search, fn(Builder $q) => $this->applySearch($q))
-            ->when($this->filters, fn(Builder $q) => $this->applyFilters($q))
-            ->pluck('id')
-            ->map(fn(int $id) => (string)$id)
-            ->toArray();
-    }
-
     public function deleteApplication(int $applicationId): void
     {
         $jobApplication = JobApplication::query()
@@ -134,5 +122,16 @@ final class ListJobApplications extends Component
             heading: 'Application Deleted',
             variant: 'success',
         );
+    }
+
+    protected function allApplicationIds(): array
+    {
+        return JobApplication::query()
+            ->whereBelongsTo(Auth::user())
+            ->when($this->search, fn (Builder $q) => $this->applySearch($q))
+            ->when($this->filters, fn (Builder $q) => $this->applyFilters($q))
+            ->pluck('id')
+            ->map(fn (int $id) => (string) $id)
+            ->toArray();
     }
 }

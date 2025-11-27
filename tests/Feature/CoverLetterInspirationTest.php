@@ -17,7 +17,6 @@ it('shows generate button when no cover letter exists', function (): void {
     $application = JobApplication::factory()->create([
         'user_id' => $user->id,
         'status' => ApplicationStatus::Applied->value,
-        'cover_letter' => null,
     ]);
 
     $this->get(route('applications.show', $application))

@@ -7,7 +7,6 @@ namespace App\Livewire\Forms;
 use App\Enums\ApplicationPriority;
 use App\Enums\ApplicationStatus;
 use App\Enums\JobType;
-use App\Models\Document;
 use App\Models\JobApplication;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -198,7 +197,7 @@ final class JobApplicationForm extends Form
 
         return DB::transaction(function () use ($application) {
             // Preserve previously saved stage dates unless explicitly changed
-            $preserve = fn($prop, $attr) => $prop !== null ? $prop : $application->$attr?->format('Y-m-d');
+            $preserve = fn ($prop, $attr) => $prop !== null ? $prop : $application->$attr?->format('Y-m-d');
 
             $application->update([
                 'job_title' => $this->job_title,

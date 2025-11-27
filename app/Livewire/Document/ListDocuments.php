@@ -57,10 +57,10 @@ final class ListDocuments extends Component
     public function render(): View
     {
         $this->documentIds = $this->allDocumentIds();
-        $this->documentIdsOnPage = $this->documents->map(fn(Document $document) => (string)$document->id)->toArray();
+        $this->documentIdsOnPage = $this->documents->map(fn (Document $document) => (string) $document->id)->toArray();
 
         return view('livewire.document.list-documents')
-            ->title(config('app.name') . ' | List Documents');
+            ->title(config('app.name').' | List Documents');
     }
 
     public function updated($property): void
@@ -130,7 +130,7 @@ final class ListDocuments extends Component
             ->whereBelongsTo(Auth::user())
             ->firstOrFail();
 
-        if (!Storage::disk('local')->exists($document->file_path)) {
+        if (! Storage::disk('local')->exists($document->file_path)) {
             Flux::toast(
                 text: 'File not found.',
                 heading: 'Download Failed',
@@ -244,10 +244,10 @@ final class ListDocuments extends Component
     {
         return Document::query()
             ->whereBelongsTo(Auth::user())
-            ->when($this->search, fn(Builder $q) => $this->applySearch($q))
-            ->when($this->filters, fn(Builder $q) => $this->applyFilters($q))
+            ->when($this->search, fn (Builder $q) => $this->applySearch($q))
+            ->when($this->filters, fn (Builder $q) => $this->applyFilters($q))
             ->pluck('id')
-            ->map(fn(int $id) => (string)$id)
+            ->map(fn (int $id) => (string) $id)
             ->toArray();
     }
 }

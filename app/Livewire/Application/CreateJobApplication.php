@@ -25,7 +25,7 @@ final class CreateJobApplication extends Component
     public function render(): View
     {
         return view('livewire.application.create-job-application')
-            ->title(config('app.name') . ' | New Application');
+            ->title(config('app.name').' | New Application');
     }
 
     public function save(): void

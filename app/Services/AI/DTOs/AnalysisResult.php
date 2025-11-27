@@ -7,14 +7,12 @@ namespace App\Services\AI\DTOs;
 final readonly class AnalysisResult
 {
     public function __construct(
-        public array  $data,
-        public int    $promptTokens,
-        public int    $completionTokens,
+        public array $data,
+        public int $promptTokens,
+        public int $completionTokens,
         public string $provider,
         public string $model,
-    )
-    {
-    }
+    ) {}
 
     public function toArray(): array
     {
