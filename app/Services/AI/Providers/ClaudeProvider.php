@@ -125,8 +125,35 @@ final readonly class ClaudeProvider implements AIProviderInterface
         // Remove null bytes and control characters except \t, \n, \r
         $responseText = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $responseText);
 
+        // Parse the JSON response
+        $analysisData = json_decode($responseText, true);
+
+        // Validate JSON parsing
+        if ($analysisData === null && json_last_error() !== JSON_ERROR_NONE) {
+            logger()->error('Failed to parse AI response JSON', [
+                'provider' => $this->name(),
+                'model' => $this->model,
+                'json_error' => json_last_error_msg(),
+                'response_snippet' => mb_substr($responseText, 0, 500),
+                'response_length' => mb_strlen($responseText),
+            ]);
+
+            throw new Exception('Failed to parse AI response: ' . json_last_error_msg() . '. The response may be malformed or incomplete.');
+        }
+
+        if (!is_array($analysisData)) {
+            logger()->error('AI response is not a valid array', [
+                'provider' => $this->name(),
+                'model' => $this->model,
+                'response_type' => gettype($analysisData),
+                'response_snippet' => mb_substr($responseText, 0, 500),
+            ]);
+
+            throw new Exception('AI response is not in the expected format. Please try again.');
+        }
+
         return new AnalysisResult(
-            data: $responseText,
+            data: $analysisData,
             promptTokens: $response->usage->promptTokens,
             completionTokens: $response->usage->completionTokens,
             provider: $this->name(),

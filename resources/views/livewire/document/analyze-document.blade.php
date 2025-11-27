@@ -16,8 +16,8 @@
             <flux:heading size="xl">{{ $document->title }}</flux:heading>
             <flux:subheading class="mt-1">
                 AI-Powered CV Analysis
-                @if ($document->analysis)
-                        - {{ $document->analyzed_at->diffForHumans() }}
+                @if ($document->lastestAnalysis)
+                        - {{ $document->lastestAnalysis->analyzed_at->diffForHumans() }}
                 @endif
             </flux:subheading>
         </div>

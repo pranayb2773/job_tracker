@@ -130,7 +130,8 @@ final readonly class ApplicationAIService
     private function buildUserPromptForCoverLetter(JobApplication $application): array
     {
         // Get previous analysis if this is a regeneration
-        $previousAnalysis = $application?->cover_letter;
+        $previousAnalysisRecord = $application->coverLetter()->first();
+        $previousAnalysis = $previousAnalysisRecord?->data;
 
         // Get CV document
         $document = $application->documents()->firstWhere('type', DocumentType::CurriculumVitae->value);
@@ -160,7 +161,8 @@ final readonly class ApplicationAIService
     private function buildUserPromptForProfileMatching(JobApplication $application): array
     {
         // Get previous analysis if this is a regeneration
-        $previousAnalysis = $application?->profile_matching;
+        $previousAnalysisRecord = $application->profileMatching()->first();
+        $previousAnalysis = $previousAnalysisRecord?->data;
 
         // Get CV document
         $document = $application->documents()->firstWhere('type', DocumentType::CurriculumVitae->value);

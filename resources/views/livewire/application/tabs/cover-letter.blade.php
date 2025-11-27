@@ -15,9 +15,10 @@ new class extends Component {
 
     public function mount(App\Models\JobApplication $application): void
     {
-        $this->application = $application->loadMissing('documents');
-        $this->coverLetter = is_array($this->application->cover_letter ?? null)
-            ? (mb_trim((string)($this->application->cover_letter['content'] ?? '')) ?: null)
+        $this->application = $application->loadMissing('documents', 'coverLetter');
+        $coverLetterData = $this->application->coverLetter?->data;
+        $this->coverLetter = is_array($coverLetterData)
+            ? (mb_trim((string)($coverLetterData['content'] ?? '')) ?: null)
             : null;
     }
 
@@ -33,8 +34,16 @@ new class extends Component {
         try {
             $result = $applicationAIService->generateCoverLetter($this->application);
 
-            $this->application->cover_letter = $result->data;
-            $this->application->save();
+            // Persist to AIAnalysis model using polymorphic relationship
+            $this->application->coverLetter()->create([
+                'data' => $result->data,
+                'type' => 'cover_letter',
+                'provider' => $result->provider,
+                'model' => $result->model,
+                'prompt_tokens' => $result->promptTokens,
+                'completion_tokens' => $result->completionTokens,
+                'analyzed_at' => now(),
+            ]);
 
             $this->coverLetter = $result->data['content'];
 
@@ -48,7 +57,8 @@ new class extends Component {
 
     public function downloadCoverLetter(): ?StreamedResponse
     {
-        $content = (string)($this->application->cover_letter['content'] ?? $this->coverLetter ?? '');
+        $coverLetterData = $this->application->coverLetter?->data;
+        $content = (string)(is_array($coverLetterData) ? ($coverLetterData['content'] ?? $this->coverLetter ?? '') : ($this->coverLetter ?? ''));
         if ($content === '') {
             Flux::toast(text: 'No cover letter to download yet.', heading: 'Nothing to Download', variant: 'warning');
             return null;

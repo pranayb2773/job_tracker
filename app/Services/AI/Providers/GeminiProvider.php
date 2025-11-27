@@ -13,18 +13,14 @@ use Prism\Prism\Exceptions\PrismProviderOverloadedException;
 use Prism\Prism\Exceptions\PrismRateLimitedException;
 use Prism\Prism\Exceptions\PrismRequestTooLargeException;
 use Prism\Prism\Prism;
-use Prism\Prism\ValueObjects\Messages\AssistantMessage;
-use Prism\Prism\ValueObjects\Messages\UserMessage;
 
 final readonly class GeminiProvider implements AIProviderInterface
 {
     public function __construct(
         private string $model = 'gemini-2.5-flash',
-        private int    $timeout = 180,
-        private int    $maxTokens = 8000,
-    )
-    {
-    }
+        private int $timeout = 180,
+        private int $maxTokens = 8000,
+    ) {}
 
     public function name(): string
     {
@@ -37,18 +33,12 @@ final readonly class GeminiProvider implements AIProviderInterface
     }
 
     /**
-     * @param string $systemPrompt
-     * @param array $userMessages
-     *
-     * @return AnalysisResult
-     *
      * @throws Exception
      */
     public function analyze(
         string $systemPrompt,
-        array  $userMessages
-    ): AnalysisResult
-    {
+        array $userMessages
+    ): AnalysisResult {
         try {
             $response = Prism::text()
                 ->using(Provider::Gemini, $this->model)
@@ -101,7 +91,7 @@ final readonly class GeminiProvider implements AIProviderInterface
         $responseText = mb_trim($responseText);
 
         // Check if response appears truncated (doesn't end with proper JSON closure)
-        $isTruncated = !preg_match('/\}[\s]*$/', $responseText);
+        $isTruncated = ! preg_match('/\}[\s]*$/', $responseText);
 
         if ($isTruncated) {
             logger('AI text response appears truncated', [
@@ -128,6 +118,30 @@ final readonly class GeminiProvider implements AIProviderInterface
         // Parse the JSON response
         $analysisData = json_decode($responseText, true);
 
+        // Validate JSON parsing
+        if ($analysisData === null && json_last_error() !== JSON_ERROR_NONE) {
+            logger()->error('Failed to parse AI response JSON', [
+                'provider' => $this->name(),
+                'model' => $this->model,
+                'json_error' => json_last_error_msg(),
+                'response_snippet' => mb_substr($responseText, 0, 500),
+                'response_length' => mb_strlen($responseText),
+            ]);
+
+            throw new Exception('Failed to parse AI response: ' . json_last_error_msg() . '. The response may be malformed or incomplete.');
+        }
+
+        if (!is_array($analysisData)) {
+            logger()->error('AI response is not a valid array', [
+                'provider' => $this->name(),
+                'model' => $this->model,
+                'response_type' => gettype($analysisData),
+                'response_snippet' => mb_substr($responseText, 0, 500),
+            ]);
+
+            throw new Exception('AI response is not in the expected format. Please try again.');
+        }
+
         return new AnalysisResult(
             data: $analysisData,
             promptTokens: $response->usage->promptTokens,
@@ -143,13 +157,13 @@ final readonly class GeminiProvider implements AIProviderInterface
     private function attemptJsonRecovery(string $truncatedJson): ?string
     {
         // Count opening and closing braces
-        $openBraces = substr_count($truncatedJson, '{');
-        $closeBraces = substr_count($truncatedJson, '}');
+        $openBraces = mb_substr_count($truncatedJson, '{');
+        $closeBraces = mb_substr_count($truncatedJson, '}');
 
         // If we have more opening braces, try to close them
         if ($openBraces > $closeBraces) {
             $missingBraces = $openBraces - $closeBraces;
-            $recovered = $truncatedJson . str_repeat('}', $missingBraces);
+            $recovered = $truncatedJson.str_repeat('}', $missingBraces);
 
             // Test if the recovered JSON is valid
             $decoded = json_decode($recovered, true);

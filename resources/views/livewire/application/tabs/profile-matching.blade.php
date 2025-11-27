@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\DocumentType;
+use App\Models\JobApplication;
 use App\Services\AI\ApplicationAIService;
 use App\Services\AI\Contracts\AIProviderInterface;
 use App\Services\AI\RateLimiting\AnalysisRateLimiter;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
 new class extends Component {
-    public App\Models\JobApplication $application;
+    public JobApplication $application;
     public ?array $profileMatching = null;
 
     // Chart data
@@ -17,10 +18,10 @@ new class extends Component {
     public int $maxKeywordFreq = 0;
     public int $yAxisMax = 0;
 
-    public function mount(App\Models\JobApplication $application): void
+    public function mount(JobApplication $application): void
     {
-        $this->application = $application->loadMissing('documents');
-        $this->profileMatching = $this->application->profile_matching ?? null;
+        $this->application = $application->loadMissing('documents', 'profileMatching');
+        $this->profileMatching = $this->application->profileMatching?->data ?? null;
         $this->computeKeywordChartData();
     }
 
@@ -38,13 +39,22 @@ new class extends Component {
             $result = $applicationAIService->generateProfileMatchingAnalysis($this->application);
 
             $this->profileMatching = $result->data;
-            $this->application->profile_matching = $result->data;
-            $this->application->save();
+
+            // Persist to AIAnalysis model using polymorphic relationship
+            $this->application->profileMatching()->create([
+                'data' => $result->data,
+                'type' => 'profile_matching',
+                'provider' => $result->provider,
+                'model' => $result->model,
+                'prompt_tokens' => $result->promptTokens,
+                'completion_tokens' => $result->completionTokens,
+                'analyzed_at' => now(),
+            ]);
 
             $this->computeKeywordChartData();
 
             Flux::toast(text: 'Profile matching generated successfully.', heading: 'Done', variant: 'success');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Flux::toast(text: $e->getMessage(), heading: 'Generation Failed', variant: 'danger');
 
             logger()->error('Profile matching generation failed', [

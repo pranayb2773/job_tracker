@@ -96,9 +96,8 @@ final readonly class CVAnalysisService
     private function buildUserPrompt(Document $document): array
     {
         // Get previous analysis if this is a regeneration
-        $previousAnalysis = $document->analysis && $document->analyzed_at
-            ? $document->analysis
-            : null;
+        $previousAnalysisRecord = $document->lastestAnalysis;
+        $previousAnalysis = $previousAnalysisRecord?->data;
 
         // Build message chain
         $messages = [];

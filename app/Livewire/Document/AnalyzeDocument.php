@@ -15,6 +15,7 @@ use Livewire\Component;
 use Spatie\Browsershot\Browsershot;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 final class AnalyzeDocument extends Component
 {
@@ -31,12 +32,15 @@ final class AnalyzeDocument extends Component
             abort(403);
         }
 
-        $this->document = $document;
+        $this->document = $document->loadMissing('lastestAnalysis');
 
         // Load existing analysis if available
-        $this->analysis = $document?->analysis;
+        $this->analysis = $document->lastestAnalysis?->data;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function analyzeCV(CVAnalysisService $cvAnalysisService): void
     {
         $this->isAnalyzing = true;
@@ -45,17 +49,18 @@ final class AnalyzeDocument extends Component
             // Analyze CV using the configured AI provider (via service)
             $result = $cvAnalysisService->analyze($this->document);
 
-            // Store analysis in database
-            $this->analysis = $result->data;
-            $this->document->update([
-                'analysis' => $result->data,
+            // Store analysis in database using polymorphic relationship
+            $this->document->aiAnalyses()->create([
+                'data' => $result->data,
+                'type' => 'document',
+                'provider' => $result->provider,
+                'model' => $result->model,
+                'prompt_tokens' => $result->promptTokens,
+                'completion_tokens' => $result->completionTokens,
                 'analyzed_at' => now(),
             ]);
 
-            logger()->debug('AnalyzeDocument stored CV analysis', [
-                'document_id' => $this->document->id,
-                'has_analysis' => $this->document->analysis !== null,
-            ]);
+            $this->analysis = $result->data;
 
             // Get remaining analyses for user feedback
             $remaining = $cvAnalysisService->getRemainingAnalyses(Auth::user());
@@ -73,7 +78,7 @@ final class AnalyzeDocument extends Component
             ]);
 
             Flux::toast(
-                text: $e->getMessage() . ' (' . $e->getRemainingTime() . ' remaining)',
+                text: $e->getMessage().' ('.$e->getRemainingTime().' remaining)',
                 heading: 'Daily Limit Reached',
                 variant: 'warning',
             );
@@ -94,14 +99,14 @@ final class AnalyzeDocument extends Component
 
     public function downloadPDF(): StreamedResponse
     {
-        if (!$this->analysis) {
+        if (! $this->analysis) {
             Flux::toast(
                 text: 'No analysis available to download.',
                 heading: 'Download Failed',
                 variant: 'danger',
             );
 
-            return response()->streamDownload(fn() => '', '');
+            return response()->streamDownload(fn () => '', '');
         }
 
         $html = view('pdf.cv-analysis', [
@@ -114,14 +119,14 @@ final class AnalyzeDocument extends Component
             ->append('-analysis.pdf')
             ->toString();
 
-        // Generate PDF to temporary file
-        $tempPath = storage_path('app/temp/' . uniqid('pdf_') . '.pdf');
+        // Generate PDF to a temporary file
+        $tempPath = storage_path('app/temp/'.uniqid('pdf_').'.pdf');
 
         Pdf::html($html)
             ->format('A4')
-            ->withBrowsershot(function (Browsershot $browsershot) {
-                $browsershot->scale(0.6);
-                $browsershot->margins(10, 10, 10, 10);
+            ->withBrowsershot(function (Browsershot $browserShot) {
+                $browserShot->scale(0.6);
+                $browserShot->margins(10, 10, 10, 10);
             })
             ->save($tempPath);
 
@@ -135,6 +140,6 @@ final class AnalyzeDocument extends Component
     public function render(): View
     {
         return view('livewire.document.analyze-document')
-            ->title(config('app.name') . ' | Analyze ' . $this->document->title);
+            ->title(config('app.name').' | Analyze '.$this->document->title);
     }
 }

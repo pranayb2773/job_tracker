@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 final class Document extends Model
 {
@@ -24,8 +26,6 @@ final class Document extends Model
         'file_mime_type',
         'file_size',
         'file_hash',
-        'analysis',
-        'analyzed_at',
     ];
 
     public function user(): BelongsTo
@@ -37,6 +37,24 @@ final class Document extends Model
     {
         return $this->belongsToMany(JobApplication::class, 'job_application_documents')
             ->withTimestamps();
+    }
+
+    /**
+     * Get all AI analyses for this document.
+     */
+    public function aiAnalyses(): MorphMany
+    {
+        return $this->morphMany(AIAnalysis::class, 'analyzable')
+            ->where('type', 'document');
+    }
+
+    /**
+     * Get the document analysis.
+     */
+    public function lastestAnalysis(): MorphOne
+    {
+        return $this->morphOne(AIAnalysis::class, 'analyzable')
+            ->where('type', 'document')->latest();
     }
 
     protected function fileSizeFormatted(): Attribute
@@ -62,8 +80,6 @@ final class Document extends Model
         return [
             'type' => DocumentType::class,
             'file_size' => 'integer',
-            'analysis' => 'array',
-            'analyzed_at' => 'datetime',
         ];
     }
 }

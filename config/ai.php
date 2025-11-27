@@ -29,7 +29,7 @@ return [
             'max_tokens' => (int) env('AI_MAX_TOKENS', 8000),
         ],
         'groq' => [
-            'model' => env('GROQ_MODEL', 'moonshotai/kimi-k2-instruct-0905'),
+            'model' => env('GROQ_MODEL', 'llama-3.1-8b-instant'),
             'timeout' => (int) env('AI_TIMEOUT', 180),
             'max_tokens' => (int) env('AI_MAX_TOKENS', 8000),
         ],

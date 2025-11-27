@@ -15,8 +15,8 @@ new class extends Component {
 
     public function mount(App\Models\JobApplication $application): void
     {
-        $this->application = $application->loadMissing('documents');
-        $this->roleAnalysis = $this->application->role_analysis ?? null;
+        $this->application = $application->loadMissing('documents', 'roleAnalysis');
+        $this->roleAnalysis = $this->application->roleAnalysis?->data ?? null;
 
         // Initialize remaining role analyses
         $service = app(RoleAnalysisService::class);
@@ -43,9 +43,16 @@ new class extends Component {
             $result = $service->analyze($desc, Auth::user());
             $this->roleAnalysis = $result->data;
 
-            // Persist to application JSON column
-            $this->application->role_analysis = $this->roleAnalysis;
-            $this->application->save();
+            // Persist to AIAnalysis model using polymorphic relationship
+            $this->application->roleAnalysis()->Create([
+                'data' => $result->data,
+                'type' => 'role_analysis',
+                'provider' => $result->provider,
+                'model' => $result->model,
+                'prompt_tokens' => $result->promptTokens,
+                'completion_tokens' => $result->completionTokens,
+                'analyzed_at' => now(),
+            ]);
 
             $this->remainingAnalyses = $service->getRemainingAnalyses(Auth::user());
 

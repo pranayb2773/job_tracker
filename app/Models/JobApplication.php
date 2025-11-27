@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 final class JobApplication extends Model
 {
@@ -44,9 +46,6 @@ final class JobApplication extends Model
         'deadline',
         'notes',
         'tags',
-        'role_analysis',
-        'profile_matching',
-        'cover_letter',
     ];
 
     public function user(): BelongsTo
@@ -58,6 +57,41 @@ final class JobApplication extends Model
     {
         return $this->belongsToMany(Document::class, 'job_application_documents')
             ->withTimestamps();
+    }
+
+    /**
+     * Get all AI analyses for this job application.
+     */
+    public function aiAnalyses(): MorphMany
+    {
+        return $this->morphMany(AIAnalysis::class, 'analyzable');
+    }
+
+    /**
+     * Get the role analysis.
+     */
+    public function roleAnalysis(): MorphOne
+    {
+        return $this->morphOne(AIAnalysis::class, 'analyzable')
+            ->where('type', 'role_analysis')->latest();
+    }
+
+    /**
+     * Get the profile matching analysis.
+     */
+    public function profileMatching(): MorphOne
+    {
+        return $this->morphOne(AIAnalysis::class, 'analyzable')
+            ->where('type', 'profile_matching')->latest();
+    }
+
+    /**
+     * Get the cover letter.
+     */
+    public function coverLetter(): MorphOne
+    {
+        return $this->morphOne(AIAnalysis::class, 'analyzable')
+            ->where('type', 'cover_letter')->latest();
     }
 
     protected function casts(): array
@@ -75,9 +109,6 @@ final class JobApplication extends Model
             'deadline' => 'date',
             'follow_up_date' => 'date',
             'tags' => 'array',
-            'role_analysis' => 'array',
-            'profile_matching' => 'array',
-            'cover_letter' => 'array',
             'status' => ApplicationStatus::class,
             'priority' => ApplicationPriority::class,
             'type' => JobType::class,
